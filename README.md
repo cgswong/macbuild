@@ -6,8 +6,8 @@
 
 For further information check the respective markdown files:
 
-  - [brewupdate.md](macbuild/brewupdate.md)
-  - [brewsetup.md](macbuild/brewsetup.md)
+  - [brewupdate.md](https://github.com/cgswong/macbuild/blob/master/brewupdate.md)
+  - [brewsetup.md](https://github.com/cgswong/macbuild/blob/master/brewsetup.md)
 
 [launchd]: http://developer.apple.com/library/mac/#technotes/tn2083/_index.html
 [homebrew]: https://github.com/mxcl/homebrew/
