@@ -5,10 +5,13 @@
 Should you want to adjust the list of binaries and/or applications that are installed the brewsetup.cfg file can be easily edited with any text editor.
 
 ## How to Install  ##
-Run the following command in the terminal:
+Run the following commands in the terminal:
 
 ```sh
-curl -L https://github.com/cgswong/macbuild/raw/master/brewsetup.* ; ./brewsetup.sh
+curl -O -L https://github.com/cgswong/macbuild/raw/master/brewsetup.sh
+curl -O -L https://github.com/cgswong/macbuild/raw/master/brewsetup.cfg
+chmod +x brewsetup.sh
+./brewsetup.sh
 ```
 
 [homebrew]: https://github.com/mxcl/homebrew/
