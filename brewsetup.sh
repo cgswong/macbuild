@@ -9,6 +9,7 @@
 # LOG
 # yyyy/mm/dd [name]: [version][notes]
 # 2015/01/07 cgwong: v0.1.0 Initial creation from notes.
+# 2015/01/08 cgwong: v1.0.0 Added cleanup, and sudo.
 # #############################################
 
 # Setup file variable
@@ -24,9 +25,18 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
 # Run configuration file to setup arrays
 . ./${CFG_FILE}
 
+# Ask for the administrator password upfront.
+sudo -v
+
+# Keep-alive: update existing `sudo` time stamp until the script has finished.
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
 echo "Installing binaries..."
 brew tap homebrew/binary
+brew tap homebrew/dupes
 brew install ${binaries[@]}
+
+# Remove outdated versions from the cellar.
 brew cleanup
 
 # -- Cask Apps Installation
@@ -44,5 +54,8 @@ brew tap caskroom/fonts
 # Install fonts
 echo "Installing fonts..."
 brew cask install ${fonts[@]}
+
+# Remove outdated versions from the cellar.
+brew cask cleanup
 
 ## EOF ##
