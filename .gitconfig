@@ -76,6 +76,9 @@
 
 [core]
 
+  # Use Sublime Text
+  editor = subl
+
 	# Use custom `.gitignore` and `.gitattributes`
 	excludesfile = ~/.gitignore
 	attributesfile = ~/.gitattributes
@@ -101,9 +104,9 @@
 
 [color "branch"]
 
-	current = yellow reverse
+	current = green
 	local = yellow
-	remote = green
+	remote = red
 
 [color "diff"]
 
@@ -114,14 +117,26 @@
 
 [color "status"]
 
-	added = yellow
-	changed = green
+	added = green
+	changed = yellow
 	untracked = cyan
+
+[credential]
+  helper = osxkeychain
 
 [diff]
 
 	# Detect copies as well as renames
 	renames = copies
+
+[difftool "sourcetree"]
+  cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+  path =
+
+[filter "media"]
+  required = true
+  clean = git media clean %f
+  smudge = git media smudge %f
 
 [help]
 
@@ -133,12 +148,17 @@
 	# Include summaries of merged commits in newly created merge commit messages
 	log = true
 
+[mergetool "sourcetree"]
+  cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+  trustExitCode = true
+
 [push]
 
 	# Use the Git 1.x.x default to avoid errors on machines with old Git
 	# installations. To use `simple` instead, add this to your `~/.extra` file:
 	# `git config --global push.default simple`. See http://git.io/mMah-w.
-	default = matching
+	#default = matching
+	default = simple
 
 # URL shorthands
 
@@ -161,3 +181,7 @@
 [url "git://gist.github.com/"]
 
 	insteadOf = "gist:"
+
+[user]
+  name = 
+  email = 

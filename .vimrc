@@ -1,7 +1,5 @@
-" Use the Solarized Dark theme
-set background=dark
-colorscheme solarized
-let g:solarized_termtrans=1
+" Use theme
+colorscheme distinguished
 
 " Make Vim more useful
 set nocompatible
@@ -34,27 +32,21 @@ endif
 " Don’t create backups when editing files in certain directories
 set backupskip=/tmp/*,/private/tmp/*
 
-" Respect modeline in files
-set modeline
-set modelines=4
 " Enable per-directory .vimrc files and disable unsafe commands in them
 set exrc
 set secure
-" Enable line numbers
-set number
 " Enable syntax highlighting
 syntax on
+" Display line numbers
+set number
 " Highlight current line
 set cursorline
 " Make tabs as wide as two spaces
 set tabstop=2
-" Show “invisible” characters
-" set lcs=tab:▸\ ,trail:·,eol:¬,nbsp:_
-" set list
+" Make tabs as spaces
+set expandtab
 " Highlight searches
 set hlsearch
-" Ignore case of searches
-set ignorecase
 " Highlight dynamically as pattern is typed
 set incsearch
 " Always show status line
