@@ -10,6 +10,7 @@
 # yyyy/mm/dd [name]: [version][notes]
 # 2015/01/07 cgwong: v0.1.0 Initial creation from notes.
 # 2015/01/08 cgwong: v1.0.0 Added cleanup, and sudo.
+# 2015/02/11 cgwong: v1.0.1 Added brew update script.
 # #############################################
 
 # Setup file variable
@@ -58,4 +59,5 @@ brew cask install ${fonts[@]}
 # Remove outdated versions from the cellar.
 brew cask cleanup
 
-## EOF ##
+# Install automated brew update
+$(dirname ${BASE_SOURCE})/brewupdate-install.sh
