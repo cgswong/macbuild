@@ -13,17 +13,25 @@
 # 2015/02/11 cgwong: v1.0.1 Added brew update script.
 # #############################################
 
+# Fail fast
+set -eo pipefail
+
 # Setup file variable
 CFG_FILE="$(basename ${0%.*}).cfg"
 
 # Setup directories
-mkdir ~/repos/{git,vagrant,scripts}
+echo "Creating directories as required..."
+[ ! -d ~/repos/git ] && mkdir -p ~/repos/git
+[ ! -d ~/repos/git ] && mkdir -p ~/repos/vagrant
+[ ! -d ~/repos/git ] && mkdir -p ~/repos/scripts
 
 # Setup brew
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+echo "Install HomeBrew..."
+#ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
 # -- Binary Installation
 # Run configuration file to setup arrays
+echo "Loading brews..."
 . ./${CFG_FILE}
 
 # Ask for the administrator password upfront.
@@ -62,4 +70,5 @@ brew cask install ${fonts[@]}
 brew cask cleanup
 
 # Install automated brew update
-$(dirname ${BASE_SOURCE})/brewupdate-install.sh
+echo "Installing Brew updater..."
+$(dirname ${0})/brewupdate-install.sh
