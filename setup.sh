@@ -16,6 +16,9 @@ git pull origin master
 function doIt() {
   rsync --exclude ".git/" --exclude ".DS_Store" --exclude "*.md" -avh --no-perms dotFiles/ ~
   source ~/.bash_profile
+  [ ! -d ~/.vim/swaps ] && mkdir -p ~/.vim/swaps
+  [ ! -d ~/.vim/backups ] && mkdir -p ~/.vim/backups
+  [ ! -d ~/.vim/undo ] && mkdir -p ~/.vim/undo
 }
 
 if [ "$1" == "--force" -o "$1" == "-f" ]; then
