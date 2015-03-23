@@ -19,6 +19,20 @@ function doIt() {
   [ ! -d ~/.vim/swaps ] && mkdir -p ~/.vim/swaps
   [ ! -d ~/.vim/backups ] && mkdir -p ~/.vim/backups
   [ ! -d ~/.vim/undo ] && mkdir -p ~/.vim/undo
+
+  # Run brew installation and setup
+  ./brewsetup.sh
+
+  # Get sudo access up front
+  sudo -v
+
+  # Install some linters
+  sudo gem install puppet-lint
+  sudo gem install yaml-lint
+  sudo gem install travis-yaml
+
+  # Install command line Markdown viewer
+  sudo gem install octodown
 }
 
 if [ "$1" == "--force" -o "$1" == "-f" ]; then
