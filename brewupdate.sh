@@ -15,4 +15,10 @@
 set -e
  
 terminal-notifier -title 'Homebrew' -message 'Updating and upgrading.'   
-brew update ; brew upgrade brew-cask ; brew upgrade ; brew cleanup ; brew cask cleanup ; brew doctor)
+brew update
+brew cask update
+brew upgrade brew-cask
+brew upgrade
+brew cleanup
+brew cask cleanup
+brew doctor
