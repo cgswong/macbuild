@@ -18,7 +18,7 @@ terminal-notifier -title 'Homebrew' -message 'Updating and upgrading.'
 brew update
 brew cask update
 brew upgrade brew-cask
-brew upgrade
+brew upgrade --all
 brew cleanup
 brew cask cleanup
 brew doctor
