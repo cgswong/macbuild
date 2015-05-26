@@ -24,8 +24,6 @@
     <integer>11</integer>
     <key>Minute</key>
     <integer>0</integer>
-    <key>Weekday</key>
-    <integer>5</integer>
   </dict>
 </dict>
 </plist>
