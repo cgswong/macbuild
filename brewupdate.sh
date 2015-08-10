@@ -17,4 +17,3 @@ echo "Doing cleanup."
 brew cleanup
 brew cask cleanup
 brew doctor
-

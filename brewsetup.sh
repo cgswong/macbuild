@@ -27,7 +27,7 @@ echo "Creating directories as required..."
 
 # Setup brew
 echo "Install HomeBrew..."
-#ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
 # -- Binary Installation
 # Run configuration file to setup arrays
@@ -38,7 +38,11 @@ echo "Loading brews..."
 sudo -v
 
 # Keep-alive: update existing `sudo` time stamp until the script has finished.
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+while true; do
+  sudo -n true
+  sleep 60
+  kill -0 "$$" || exit
+done 2>/dev/null &
 
 echo "Setting taps..."
 brew tap homebrew/binary
@@ -55,8 +59,9 @@ brew cleanup
 brew tap caskroom/versions
 
 echo "Installing apps..."
-# Default is ~/Applications, install instead to /Applications
-brew cask install --appdir="/Applications" ${apps[@]}
+# Default is ~/Applications
+#brew cask install --appdir="/Applications" ${apps[@]}
+brew cask install ${apps[@]}
 
 # Use tap for installing fonts
 brew tap caskroom/fonts

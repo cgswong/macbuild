@@ -38,5 +38,5 @@ else
 fi
 
 # Copy binary file to expected location
-ln -s ${0%/*}/brewupdate.sh /usr/local/bin/brewupdate.sh
+cp ${0%/*}/brewupdate.sh /usr/local/bin/brewupdate.sh
 echo "Copied binary"
