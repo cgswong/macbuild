@@ -1,11 +1,6 @@
 #!/bin/bash
 # ##########################################################
-# NAME: setup.sh
-#
 # DESC: Setup environment with dot files and brew for better productivity.
-#
-# LOG: yyyy/mm/dd [name]: [version] [notes]
-# 2015/02/11 cgwong: 1.0.0 Created from reference notes and steps.
 # ##########################################################
 
 cd "$(dirname "${BASH_SOURCE}")"

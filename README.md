@@ -5,9 +5,9 @@ This project facilitates a simple set up of a Mac computer using standard script
 
 **brewupdate** is a [launchd agent][launchd] to update [homebrew][homebrew] formulae automatically every 5 days at 11 AM (local time).
 
-**brewsetup** is a simple bash script to install [homebrew][homebrew] and setup your Mac OS with a list of various binaries and applications as given by the dependent configuration file *brewsetup.cfg*.
+`brewsetup.sh` is a simple bash script to install [homebrew][homebrew] and setup your Mac OS with a list of various binaries and applications as given by the dependent configuration file `brewsetup.cfg`.
 
-For further information check the respective markdown files:
+For further information check the respective readme files:
 
   - [brewupdate.md](https://github.com/cgswong/macbuild/blob/master/brewupdate.md)
   - [brewsetup.md](https://github.com/cgswong/macbuild/blob/master/brewsetup.md)
