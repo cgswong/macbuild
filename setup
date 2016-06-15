@@ -1,7 +1,5 @@
 #!/bin/bash
-# ##########################################################
-# DESC: Setup environment with dot files and brew for better productivity.
-# ##########################################################
+# Setup environment with dot files and brew for better productivity.
 
 cd "$(dirname "${BASH_SOURCE}")"
 
@@ -16,7 +14,7 @@ function doIt() {
   [ ! -d ~/.vim/undo ] && mkdir -p ~/.vim/undo
 
   # Run brew installation and setup
-  ./brewsetup.sh
+  ./brewsetup
 
   # Get sudo access up front
   sudo -v

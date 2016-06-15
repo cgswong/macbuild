@@ -1,9 +1,7 @@
 #!/bin/bash
-# #############################################
-# DESC: Script to setup Mac computers with software
-#       using 'brew' and 'brew cask' commands.
-#       May need to install Xcode and the Xcode command line tools.
-# #############################################
+# Setup Mac computers with software
+# using 'brew' and 'brew cask' commands.
+# May need to install Xcode and the Xcode command line tools.
 
 # Fail fast
 set -eo pipefail
@@ -95,5 +93,5 @@ brew cask cleanup
 
 # Install automated brew update
 log "Installing Brew updater..."
-$(dirname ${0})/brewupdate-install.sh
+$(dirname ${0})/brewupdate-install
 log "MacBuild complete!"

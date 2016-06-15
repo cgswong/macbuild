@@ -1,2 +1,2 @@
-# Add AWS EC2 in PATH
-PATH=$EC2_HOME/bin:$(brew --prefix coreutils)/libexec/gnubin:$PATH ; export PATH
+PATH=$(brew --prefix coreutils)/libexec/gnubin:/usr/local/sbin:$GOROOT/bin:${PATH} ; export PATH
+#PATH=/usr/local/sbin:$PATH ; export PATH

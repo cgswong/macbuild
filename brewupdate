@@ -1,11 +1,9 @@
 #!/bin/bash
-# ############################################################################
-# NAME: brewupdate.sh
-# DESC: Script to update, upgrade and check (doctor) Homebrew.
-# ############################################################################
+# Update, upgrade and check Homebrew.
 
 terminal-notifier -title 'Homebrew' -message 'Updating and upgrading.'
 echo "Running 'brew update'."
+brew update
 brew update
 echo "Running 'brew cask update'."
 brew cask update

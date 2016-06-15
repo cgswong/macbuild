@@ -1,9 +1,6 @@
 #!/bin/bash
-# ############################################################################
-# NAME: brewupdate-install.sh
-# DESC: Script to setup launchd process to update, upgrade and check (doctor)
-#       for brew.
-# ############################################################################
+# Setup launchd process to update, upgrade and check (doctor)
+# for brew.
 
 set -e
 
