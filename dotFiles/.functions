@@ -199,3 +199,21 @@ function getcertnames() {
 function tre() {
 	tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX;
 }
+
+# AWS CLI using assume role profiles
+function awsassume() {
+  if [[ $1 ]]; then
+    export AWS_DEFAULT_PROFILE="$1"
+    CURRENT=`aws iam list-users|awk -F: '/"Arn":/{print $6}'|tail -n1`
+    FULLACCOUNT=`cat ~/.aws/config | grep ${CURRENT} | head -n 1`
+    echo "Default account is now ${FULLACCOUNT}"
+  else
+    echo "please provide a profile name as a parameter.  Available profiles are:"
+    cat ~/.aws/config | grep '\[' | egrep -v '\[default\]|\[hub\]'
+  fi
+}
+
+# AWS profile management
+function setaws() {
+  eval $(awsenv $1)
+}
