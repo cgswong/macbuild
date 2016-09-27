@@ -7,8 +7,8 @@ brew update
 brew update
 echo "Running 'brew cask update'."
 brew cask update
-echo "Attempting to upgrade brew cask."
-brew upgrade brew-cask
+##echo "Attempting to upgrade brew cask."
+##brew upgrade brew-cask
 echo "Attempting to upgrade all brews."
 brew upgrade --all
 echo "Doing cleanup."
