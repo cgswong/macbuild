@@ -61,6 +61,7 @@ export GOROOT=/usr/local/opt/go
 # Python virtual environments
 export WORKON_HOME=${HOME}/.virtualenvs
 export PROJECT_HOME=${HOME}/repos/workspace
+export PYENV_VIRTUALENVWRAPPER_PREFER_PYVENV="true"
 
 # Link Brew Cask applications to normal location
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
@@ -71,25 +72,20 @@ if which rbenv > /dev/null; then
 fi
 
 ## TAB completion
-# AWS shell command completion
-[[ ${SHELL} == *"bash" ]] && complete -C '/usr/local/bin/aws_completer' aws || source /usr/local/bin/aws_zsh_completer.sh
+# Load pyenv autocompletion
+if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
+if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init -)"; fi
 
 if [[ ${SHELL} == *"bash" ]]; then
   # Brew command completion
   [[ -f $(brew --prefix)/etc/bash_completion ]] && source $(brew --prefix)/etc/bash_completion
 
-  # Bash command tab completion
+  # Brewed Bash command tab completion
   if which brew > /dev/null && [ -f "$(brew --prefix)/etc/bash_completion" ]; then
     source "$(brew --prefix)/etc/bash_completion"
   elif [ -f /etc/bash_completion ]; then
     source /etc/bash_completion
   fi
-
-  # SSH hostname tab completions
-  # [[ -e "${HOME}/.ssh/config" ]] && [[ -f /usr/local/etc/bash_completion.d/ssh ]] && source /usr/local/etc/bash_completion.d/ssh
-
-  # SSH hostname tab completion based on ~/.ssh/config, ignoring wildcards
-  # [ -e "${HOME}/.ssh/config" ] && complete -o "default" -o "nospace" -W "$(grep "^Host" ~/.ssh/config | grep -v "[?*]" | cut -d " " -f2- | tr ' ' '\n')" scp sftp ssh
 
   # Enable tab completion for `g` by marking it as an alias for `git`
   if type _git &> /dev/null && [ -f /usr/local/etc/bash_completion.d/git-completion.bash ]; then
@@ -105,8 +101,19 @@ if [[ ${SHELL} == *"bash" ]]; then
 
   # Google Cloud shell command completion
   source '${HOME}/repos/workspace/gcloud/google-cloud-sdk/completion.bash.inc'
+  # AWS shell command completion
+  complete -C '/usr/local/bin/aws_completer' aws
   # kubectl completion
   source /usr/local/etc/bash_completion.d/kubectl
+  # direnv execution
+  eval "$(direnv hook bash)"
 else
+## Assume zsh
+  # AWS shell command completion
+  source /usr/local/bin/aws_zsh_completer.sh
+  # kubectl completion
   source <(kubectl completion zsh)
+  # direnv execution
+  eval "$(direnv hook zsh)"
 fi
+
