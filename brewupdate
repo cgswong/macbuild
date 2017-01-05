@@ -1,0 +1,13 @@
+#!/bin/bash
+# Update, upgrade and check Homebrew.
+
+terminal-notifier -title 'Homebrew' -message 'Updating and upgrading.'
+echo "Running 'brew update'."
+brew update
+brew update
+echo "Attempting to upgrade all brews."
+brew upgrade
+echo "Doing cleanup."
+brew cleanup
+brew cask cleanup
+brew doctor
