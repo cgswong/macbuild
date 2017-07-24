@@ -43,9 +43,9 @@ usage() {
   print_banner
 cat <<EOM
 
-${pkg}
+---------------------
 
-Install and configure macOS computer.
+${pkg} - Install and configure macOS computer.
 
 Usage: ${pkg} [options]
 
@@ -164,11 +164,13 @@ for arg in "$@"; do
       ;;
     -i | --install)
       MB_INSTALL="yes"
+      ;;
     -r=* | --repo=*)
       GIT_REPO="$optarg"
       ;;
     -t=* | --tags=*)
       ANSIBLE_TAGS="$optarg"
+      ;;
     -u=* | --username=*)
       USER_CFG_FILE="$optarg"
       ;;
