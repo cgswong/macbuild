@@ -13,7 +13,7 @@ Installation requirements and dependencies are handled by the `macbuild` script.
 ## Installation
 
 ```bash
-curl -sSL https://github.com/cgswong/macbuild/bin/macbuild | bash -s --install
+curl -sSL https://raw.githubusercontent.com/cgswong/macbuild/bin/macbuild | bash -s -- --install
 ```
 
 ## Running a specific set of tagged tasks
