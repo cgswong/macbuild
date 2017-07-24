@@ -1,0 +1,23 @@
+# top-most EditorConfig file, cascade to all sub-directories
+root = true
+
+# For every file
+[*]
+end_of_line = LF
+charset = utf-8
+max_line_length = 120
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+# For MarkDown
+[*.md]
+trim_trailing_whitespace = false
+
+# For Java files
+[*.java]
+continuation_indent_size = 0
+
+# For Python files
+[*.py]
+indent_size = 4

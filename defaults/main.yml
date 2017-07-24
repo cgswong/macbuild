@@ -1,0 +1,239 @@
+---
+ansible_dl_dir: "~/.ansible-downloads/"
+ansible_cfg_dir: "/etc/ansible"
+ansible_local_cfg_dir: "/usr/local/etc/ansible"
+
+configure_dotfiles: yes
+configure_osx: yes
+
+osx_script: "~/.osx --no-restart"
+
+dotfiles_repo: "https://github.com/cgswong/dotfiles.git"
+dotfiles_repo_accept_hostkey: yes
+dotfiles_repo_local_destination: "~/dotfiles"
+dotfiles_files:
+  - ".bash_profile"
+  - ".bash_prompt"
+  - ".bashrc"
+  - ".curlrc"
+  - ".extra"
+  - ".functions"
+  - ".gitconfig"
+  - ".gitignore"
+  - ".inputrc"
+  - ".osx"
+  - ".path"
+  - ".vimrc"
+  - ".zshrc"
+
+# Homebrew, see `geerlingguy.homebrew` role (https://github.com/geerlingguy/ansible-role-homebrew) documentation for usage instructions.
+homebrew_installed_packages:
+  - asciicinema
+  - asciidoc
+  - autoconf
+  - automake
+  - autossh
+  - awless
+  - awscli
+  - bash
+  - bash-completion
+  - bats
+  - binutils
+  - cf-cli
+  - cli53
+  - corectl
+  - coreutils
+  - cowsay
+  - curl
+  - diffutils
+  - direnv
+  - dnsmasq
+  - dnsperf
+  - dnstracer
+  - docbook
+  - doxygen
+  - elixir
+  - elm
+  - etcd
+  - fdupes
+  - { name: ffmpeg, install_options: "with-fdk-aac,with-openh264,with-openjpeg,with-openjpeg,with-snappy"}
+  - figlet
+  - file-formula
+  - findutils
+  - fleetctl
+  - fontconfig
+  - gawk
+  - gettext
+  - ghostscript
+  - gifsicle
+  - git
+  - git-extras
+  - git-flow
+  - git-secrets
+  - giter8
+  - github-release
+  - go
+  - godep
+  - { name: gnu-sed, install_options: "with-default-names"}
+  - { name: gnu-tar, install_options: "with-default-names"}
+  - { name: gnu-which, install_options: "with-default-names"}
+  - gnupg2
+  - gnutls
+  - gpatch
+  - { name: grep, install_options: "with-default-names"}
+  - gzip
+  - htop
+  - httpie
+  - httpstat
+  - hub
+  - hugo
+  - icu4c
+  - iperf
+  - jq
+  - kibana
+  - kops
+  - kube-aws
+  - kubernetes-cli
+  - kubernetes-helm
+  - lame
+  - less
+  - libevent
+  - lynx
+  - { name: make, install_options: "with-default-names"}
+  - mcrypt
+  - mkdocs
+  - neovim
+  - nmap
+  - node
+  - nomad
+  - nvm
+  - openssh
+  - packer
+  - pandoc
+  - pssh
+  - pv
+  - pwgen
+  - pyenv
+  - pyenv-virtualenv
+  - pyenv-virtualenvwrapper
+  - rbenv
+  - rename
+  - rsync
+  - s3cmd
+  - screen
+  - slackcat
+  - ssh-copy-id
+  - sshfs
+  - tcptrace
+  - terminal-notifier
+  - terraform
+  - tree
+  - unzip
+  - vault
+  - { name: vim, install_options: "with-luajit,with-python3,with-override-system-vi"}
+  - watch
+  - wdiff
+  - webkit2png
+  - wget
+  - wrk
+  - zsh
+  - zsh-completions
+
+homebrew_upgrade_all_packages: yes
+
+homebrew_taps:
+  - caskroom/cask
+  - caskroom/fonts
+  - homebrew/fuse
+  - versent/taps
+  - wallix/awless
+
+homebrew_cask_appdir: /Applications
+homebrew_cask_apps:
+  - atom
+  - chefdk
+  - clipmenu
+  - docker
+  - etcher
+  - evernote
+  - flux
+  - github-desktop
+  - google-chrome
+  - handbrake
+  - imageoptim
+  - iterm2
+  - java
+  - keybase
+  - launchcontrol
+  - licecap
+  - ngrok
+  - pgadmin4
+  - postman
+  - qlcolorcode
+  - qlmarkdown
+  - qlstephen
+  - quicklook-json
+  - recordit
+  - screenhero
+  - skitch
+  - slack
+  - sourcetree
+  - squidman
+  - the-unarchiver
+  - torbrowser
+  - transmission
+  - unetbootin
+  - vagrant
+  - vagrant-manager
+  - virtualbox
+  - virtualbox-extension-pack
+  - vlc
+  - wireshark
+  - xmind
+
+# See `geerlingguy.mas` role (https://github.com/geerlingguy/ansible-role-mas) documentation for usage instructions.
+mas_installed_apps: []
+mas_email: ""
+mas_password: ""
+mas_upgrade_all_apps: yes
+
+# Install packages from other package managers.
+# Note: You are responsible for making sure the required package managers are
+# installed, eg. through homebrew.
+#gem_packages: []
+  # - name: bundler
+  #   state: present # present/absent/latest, default: present
+  #   version: "~> 1.15.1" # default: N/A
+gem_packages:
+  - name: bundler
+    state: latest
+  - name: kitchen-ec2
+    state: latest
+  - name: kitchen-vagrant
+    state: latest
+  - name: octodown
+    state: latest
+  - name: rubocop
+    state: latest
+  - name: yaml-lint
+    state: latest
+
+#npm_packages: []
+  # - name: webpack
+  #   state: present # present/absent/latest, default: present
+  #   version: "^2.6" # default: N/A
+npm_packages:
+  - name: serverless
+    state: latest
+#pip_packages: []
+  # - name: mkdocs
+  #   state: present # present/absent/latest, default: present
+  #   version: "0.16.3" # default: N/A
+pip_packages:
+  - name: ansible-lint
+    state: latest
+  - name: kube-shell
+    state: latest
+
+# Glob pattern to ansible task files to run after all other tasks are finished.
+post_provision_tasks: []
