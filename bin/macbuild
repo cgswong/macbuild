@@ -125,7 +125,7 @@ main() {
   if [ ! -z ${MB_INSTALL} ]; then
     log "Installing ${pkg}"
     git clone -q ${GIT_REPO} ${MB_HOME}
-    ln -s ${MB_HOME}/macbuild /usr/local/bin/macbuild
+    ln -s ${MB_HOME}/bin/macbuild /usr/local/bin/macbuild
     exit 0
   fi
 
