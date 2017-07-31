@@ -51,6 +51,7 @@ homebrew_installed_packages:
   - dnsperf
   - dnstracer
   - docbook
+  - docker-cloud
   - doxygen
   - elixir
   - elm
