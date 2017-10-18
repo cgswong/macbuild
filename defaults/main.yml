@@ -39,6 +39,7 @@ homebrew_installed_packages:
   - bash-completion
   - bats
   - binutils
+  - browser
   - cf-cli
   - cli53
   - corectl
@@ -128,6 +129,7 @@ homebrew_installed_packages:
   - tcptrace
   - terminal-notifier
   - terraform
+  - tig
   - tree
   - unzip
   - vault
@@ -165,7 +167,6 @@ homebrew_cask_apps:
   - iterm2
   - java
   - keybase
-  - launchcontrol
   - licecap
   - ngrok
   - pgadmin4
