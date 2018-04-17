@@ -34,9 +34,6 @@ macbuild --tags="dotfiles,homebrew"
 
 Available variables are listed below along with default values. See `defaults/main.yml` for current listing.
 
-- `ansible_dl_dir` - Directory for Ansible downloads (default: `~/.ansible-downloads`).
-- `ansible_cfg_dir` - Ansible default directory for system-wide configurations (default: `/etc/ansible`).
-- `ansible_local_cfg_dir` - Ansible alternate directory for local configurations (default: `/usr/local/etc/ansible`).
 - `configure_dotfiles` - Flag to install the dotfiles (default: `yes`).
 - `configure_osx` - Flag to setup the OSX dotfile (default: `yes`).
 - `osx_script` - Execution command for running the OSX dotfile (default: `~/.osx --no-restart`).

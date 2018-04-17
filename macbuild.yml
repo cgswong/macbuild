@@ -1,0 +1,27 @@
+---
+- hosts: localhost
+  connection: local
+
+  pre_tasks:
+    - include_vars: "{{ item }}"
+      with_fileglob:
+        - "vars/config-*.yml"
+      tags:
+        - always
+
+  tasks:
+    - include_role:
+        name: geerlingguy.dotfiles
+      when: configure_dotfiles
+      tags:
+        - dotfiles
+
+    - import_tasks: tasks/main.yml
+      tags:
+        - homebrew
+
+    - import_tasks: "{{ item }}"
+      with_fileglob:
+        - "tasks/config-*.yml"
+      tags:
+        - profile

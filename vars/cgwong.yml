@@ -4,76 +4,120 @@ configure_osx: yes
 
 osx_script: "~/.osx --no-restart"
 
-dotfiles_repo: "https://github.platforms.engineering/datasvcs/dotfiles.git"
+dotfiles_repo: "https://github.com/cgswong/dotfiles.git"
 dotfiles_repo_accept_hostkey: yes
-dotfiles_repo_local_destination: "~/Documents/dotfiles"
+dotfiles_repo_local_destination: "~/dotfiles"
 dotfiles_home: "~"
 dotfiles_files:
-  - .bash_profile
-  - .bash_prompt
-  - .bashrc
-  - .curlrc
-  - .extra
-  - .functions
-  - .gitconfig
-  - .gitignore
-  - .inputrc
-  - .osx
-  - .path
-  - .vimrc
-  - .zshrc
+  - ".bash_profile"
+  - ".bash_prompt"
+  - ".bashrc"
+  - ".curlrc"
+  - ".extra"
+  - ".functions"
+  - ".gitconfig"
+  - ".gitignore"
+  - ".inputrc"
+  - ".osx"
+  - ".path"
+  - ".vimrc"
+  - ".zshrc"
 
 # Homebrew, see `geerlingguy.homebrew` role (https://github.com/geerlingguy/ansible-role-homebrew) documentation for usage instructions.
 homebrew_brewfile_dir: "~"
 homebrew_use_brewfile: true
 
 homebrew_installed_packages:
-  - asciidoc
   - asciinema
+  - asciidoc
+  - autoconf
+  - automake
+  - awscli
   - bash
   - bash-completion@2
+  - bats
+  - browser
+  - cf-cli
+  - cli53
+  - corectl
   - coreutils
   - cowsay
   - curl
   - diffutils
   - direnv
   - dnsmasq
+  - dnsperf
+  - dnstracer
   - docbook
+  - docker-cloud
   - doxygen
+  - etcd
   - fdupes
   - figlet
   - file-formula
   - findutils
+  - fleetctl
   - fontconfig
   - gawk
   - gettext
   - ghostscript
   - gifsicle
   - git
-  - gnu-sed
-  - gnu-tar
-  - gnu-which
+  - git-extras
+  - git-flow
+  - git-secrets
+  - giter8
+  - github-release
   - gnupg2
   - gnutls
-  - grep
+  - go
+  - godep
+  - gpatch
+  - graphviz
   - gzip
+  - htop
+  - httpie
+  - httpstat
+  - hub
+  - hugo
+  - icu4c
+  - iperf
   - jq
+  - kops
+  - kubernetes-cli
+  - kubernetes-helm
+  - lame
   - less
+  - libevent
   - lynx
-  - make
   - mcrypt
   - mkdocs
+  - neovim
+  - nmap
   - node
+  - nomad
   - nvm
   - openssh
+  - packer
   - pandoc
+  - pipenv
+  - pv
   - pwgen
+  - pyenv
+  - pyenv-virtualenv
+  - pyenv-virtualenvwrapper
+  - rbenv
   - rename
   - rsync
+  - s3cmd
   - slackcat
   - ssh-copy-id
+  - sshfs
   - sshuttle
   - tcptrace
+  - terminal-notifier
+  - terraform
+  - tig
   - tmux
   - tree
   - unzip
@@ -82,6 +126,13 @@ homebrew_installed_packages:
   - wdiff
   - webkit2png
   - wget
+  - wrk
+  - { name: ffmpeg, install_options: "with-fdk-aac,with-openh264,with-openjpeg,with-openjpeg,with-snappy"}
+  - { name: gnu-sed, install_options: "with-default-names"}
+  - { name: gnu-tar, install_options: "with-default-names"}
+  - { name: gnu-which, install_options: "with-default-names"}
+  - { name: grep, install_options: "with-default-names"}
+  - { name: make, install_options: "with-default-names"}
   - { name: vim, install_options: "with-luajit,with-python3,with-override-system-vi"}
 
 homebrew_uninstalled_packages: []
@@ -95,14 +146,24 @@ homebrew_taps:
 homebrew_cask_appdir: "/Applications"
 homebrew_cask_apps:
   - atom
+  - chefdk
   - clipmenu
+  - docker
+  - evernote
   - flux
   - flycut
+  - github-desktop
   - google-chrome
+  - handbrake
   - imageoptim
   - iterm2
   - java
+  - keybase
+  - launchcontrol
   - licecap
+  - ngrok
+  - pgadmin4
+  - postman
   - qlcolorcode
   - qlmarkdown
   - qlstephen
@@ -110,8 +171,17 @@ homebrew_cask_apps:
   - recordit
   - skitch
   - slack
+  - sourcetree
+  - squidman
   - the-unarchiver
   - transmission
+  - vagrant
+  - vagrant-manager
+  - virtualbox
+  - virtualbox-extension-pack
+  - vlc
+  - wireshark
+  - xmind
 
 homebrew_cask_uninstalled_apps: []
 
@@ -124,7 +194,17 @@ homebrew_cask_uninstalled_apps: []
 gem_packages:
   - name: bundler
     state: latest
+  - name: kitchen-ec2
+    state: latest
+  - name: kitchen-vagrant
+    state: latest
   - name: octodown
+    state: latest
+  - name: rubocop
+    state: latest
+  - name: travis
+    state: latest
+  - name: vagrant-dnsmasq
     state: latest
   - name: yaml-lint
     state: latest
@@ -148,7 +228,13 @@ npm_packages:
 pip_packages:
   - name: ansible-lint
     state: latest
+  - name: boto3
+    state: latest
+  - name: docker-py
+    state: latest
   - name: flake8
+    state: latest
+  - name: kube-shell
     state: latest
   - name: mkdocs
     state: latest
