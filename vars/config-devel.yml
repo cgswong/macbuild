@@ -99,7 +99,6 @@ homebrew_uninstalled_packages_devel: []
 homebrew_taps_devel:
   - caskroom/cask
   - caskroom/fonts
-  - homebrew/fuse
   - homebrew/services
 
 homebrew_cask_apps_devel:
