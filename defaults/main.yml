@@ -33,7 +33,6 @@ homebrew_installed_packages:
   - bash
   - bash-completion@2
   - coreutils
-  - cowsay
   - curl
   - diffutils
   - direnv

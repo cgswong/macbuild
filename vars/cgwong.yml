@@ -41,7 +41,6 @@ homebrew_installed_packages:
   - cli53
   - corectl
   - coreutils
-  - cowsay
   - curl
   - diffutils
   - direnv

@@ -6,7 +6,6 @@ homebrew_installed_packages_devel:
   - bash
   - bash-completion@2
   - coreutils
-  - cowsay
   - curl
   - diffutils
   - direnv
