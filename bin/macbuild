@@ -138,9 +138,9 @@ main() {
   if [ -f "${MB_HOME}/vars/${USER_CFG_FILE}.yml" ]; then
     log "Running Ansible playbook for $username"
     if [ ! -z ${ANSIBLE_TAGS} ]; then
-      ansible-playbook main.yml --inventory=inventory --ask-become-pass --tags "${ANSIBLE_TAGS}"
+      ansible-playbook main.yml --inventory=hosts --ask-become-pass --tags "${ANSIBLE_TAGS}"
     else
-      ansible-playbook main.yml --inventory=inventory --ask-become-pass
+      ansible-playbook main.yml --inventory=hosts --ask-become-pass
     fi
   fi
   cd ${CWD}
