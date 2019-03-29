@@ -1,8 +1,8 @@
 ---
-- name: Reload launchd
+- name: reload launchd
   become: yes
   shell: 'launchctl unload /Library/LaunchDaemons/homebrew.macbuild.brewupdate.plist && launchctl load /Library/LaunchDaemons/homebrew.macbuild.brewupdate.plist'
 
-- name: Restart launchd
+- name: restart launchd
   become: yes
   shell: 'launchctl stop homebrew.macbuild.brewupdate.plist && launchctl start homebrew.macbuild.brewupdate.plist'

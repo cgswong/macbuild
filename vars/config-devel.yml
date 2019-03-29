@@ -29,8 +29,8 @@ homebrew_brewfile_dir: "~"
 homebrew_use_brewfile: true
 
 homebrew_installed_packages:
-  - asciinema
   - asciidoc
+  - asciinema
   - autoconf
   - automake
   - awscli
@@ -67,12 +67,16 @@ homebrew_installed_packages:
   - git-secrets
   - giter8
   - github-release
+  - gnu-sed
+  - gnu-tar
+  - gnu-which
   - gnupg2
   - gnutls
   - go
   - godep
   - gpatch
   - graphviz
+  - grep
   - gzip
   - htop
   - httpie
@@ -87,6 +91,7 @@ homebrew_installed_packages:
   - lame
   - less
   - lynx
+  - make
   - mcrypt
   - mkdocs
   - neovim
@@ -109,7 +114,6 @@ homebrew_installed_packages:
   - s3cmd
   - slackcat
   - ssh-copy-id
-  - sshfs
   - sshuttle
   - tcptrace
   - terminal-notifier
@@ -119,18 +123,12 @@ homebrew_installed_packages:
   - tree
   - unzip
   - vault
+  - vim
   - watch
   - wdiff
   - webkit2png
   - wget
   - wrk
-  - { name: ffmpeg, install_options: "with-fdk-aac,with-openh264,with-openjpeg,with-openjpeg,with-snappy"}
-  - { name: gnu-sed, install_options: "with-default-names"}
-  - { name: gnu-tar, install_options: "with-default-names"}
-  - { name: gnu-which, install_options: "with-default-names"}
-  - { name: grep, install_options: "with-default-names"}
-  - { name: make, install_options: "with-default-names"}
-  - { name: vim, install_options: "with-luajit,with-python3,with-override-system-vi"}
 
 homebrew_uninstalled_packages: []
 
@@ -232,3 +230,6 @@ pip_packages:
     state: latest
   - name: yamllint
     state: latest
+
+# Glob pattern to Ansible task files to run after all other tasks are finished.
+post_provision_tasks: []
