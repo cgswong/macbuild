@@ -1,0 +1,9 @@
+# Mac trashcan
+.DS_Store
+
+# Vagrant droppings
+.vagrant
+
+# Ansible droppings
+*.retry
+

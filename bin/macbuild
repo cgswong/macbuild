@@ -1,0 +1,188 @@
+#!/bin/bash
+# Initial macOS setup for configuration.
+
+# Set values
+pkg=${0##*/}
+
+GIT_REPO="https://github.com/cgswong/macbuild.git"
+MB_HOME="/usr/local/macbuild"
+USER_CFG_FILE=${USER}
+
+# set colors
+red=$(tput setaf 1)
+green=$(tput setaf 2)
+yellow=$(tput setaf 3)
+blue=$(tput setaf 4)
+purple=$(tput setaf 5)
+cyan=$(tput setaf 6)
+white=$(tput setaf 7)
+reset=$(tput sgr0)
+
+# Print messages
+log() {
+  # Write messages to screen
+  echo "$(date +"%F %T") [${pkg}] $1"
+}
+
+# Print error message and exit
+die() {
+  log "${red}[FAIL] $1${reset}" >&2 && return 1
+}
+
+# Print banner
+print_banner() {
+echo "${green}                         _             _  _      _${reset}"
+echo "${green} _ __ ___    __ _   ___ | |__   _   _ (_)| |  __| |${reset}"
+echo "${green}| '_ \` _ \  / _\` | / __|| '_ \ | | | || || | / _\` |${reset}"
+echo "${green}| | | | | || (_| || (__ | |_) || |_| || || || (_| |${reset}"
+echo "${green}|_| |_| |_| \__,_| \___||_.__/  \__,_||_||_| \__,_|${reset}"
+
+}
+
+usage() {
+  print_banner
+cat <<EOM
+
+---------------------
+
+${pkg} - Install and configure macOS computer.
+
+Usage: ${pkg} [options]
+
+Options:
+  -h, --help
+      Output help (this message)
+
+  -i, --install
+      Install ${pkg} only.
+
+  -r=, --repo=[github_repo]
+      GitHub repository to use (defaults to ${GIT_REPO}).
+
+  -t=, --tags=[ansible tags]
+      Comma separated list of tags to use for filtering setup. Valid tags are:
+
+      - dotfiles
+      - extra-packages
+      - homebrew
+      - mas
+      - osx
+
+  -u=, --username=[username]
+      User specific configuration file to include (defaults to ${USER_CFG_FILE}).
+EOM
+}
+
+# Get and install Xcode CLI tools (credits https://github.com/boxcutter/osx/blob/master/script/xcode-cli-tools.sh)
+install_clt() {
+  OSX_VERS=$(sw_vers -productVersion | awk -F "." '{print $2}')
+
+  # on 10.9+, we can leverage SUS to get the latest CLI tools
+  if [ "$OSX_VERS" -ge 9 ]; then
+    # Create the placeholder file that's checked by CLI updates' .dist code in Apple's SUS catalog
+    touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+    # find the CLI Tools update
+    PROD=$(softwareupdate -l | grep "\*.*Command Line" | head -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
+    # Install it
+    softwareupdate -i "$PROD" -v
+    rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+  fi
+}
+
+main() {
+  log "Checking if we need to ask for a sudo password"
+  sudo -v
+  export ANSIBLE_ASK_SUDO_PASS=True
+
+  log "Keep-alive: update existing sudo time stamp until we are finished"
+  while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
+  export HOMEBREW_CASK_OPTS="--appdir=/Applications"
+
+  # Install XCode command line tools
+  if [[ ! -f "/Library/Developer/CommandLineTools/usr/bin/clang" ]]; then
+    log "Installing XCode command line tools"
+    install_clt
+  fi
+
+  # Install Ansible
+  if ! which pip &>/dev/null ; then
+    log "Installing PIP"
+    sudo easy_install --quiet pip
+  fi
+  if ! which ansible &>/dev/null; then
+      log "Installing Ansible"
+      sudo pip install --upgrade --quiet ansible
+  fi
+
+  # Create directories and files
+  if [[ ! -d ${MB_HOME} ]]; then
+    log "Creating necessary folders"
+    sudo mkdir -p ${MB_HOME}
+    sudo chown -R ${USER} ${MB_HOME}
+  fi
+
+  if [ ! -z ${MB_INSTALL} ]; then
+    log "Installing ${pkg}"
+    git clone -q ${GIT_REPO} ${MB_HOME}
+    ln -s ${MB_HOME}/bin/macbuild /usr/local/bin/macbuild
+    exit 0
+  fi
+
+  # Run Ansible roles
+  CWD=${PWD}
+  cd ${MB_HOME}
+  log "Getting required roles"
+  ansible-galaxy install --role-file=requirements.yml --roles-path=${MB_HOME}/roles
+
+  if [ -f "${MB_HOME}/vars/${USER_CFG_FILE}.yml" ]; then
+    log "Running Ansible playbook for $username"
+    if [ ! -z ${ANSIBLE_TAGS} ]; then
+      ansible-playbook main.yml --inventory=inventory --ask-become-pass --tags "${ANSIBLE_TAGS}"
+    else
+      ansible-playbook main.yml --inventory=inventory --ask-become-pass
+    fi
+  fi
+  cd ${CWD}
+}
+
+# Process command line
+for arg in "$@"; do
+  if test -n "$prev_arg"; then
+    eval "$prev_arg=\$arg"
+    prev_arg=
+  fi
+
+  case "$arg" in
+      -*=*) optarg=`echo "$arg" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+      *) optarg= ;;
+  esac
+
+  case $arg in
+    -h | --help)
+      usage && exit 0
+      ;;
+    -i | --install)
+      MB_INSTALL="yes"
+      ;;
+    -r=* | --repo=*)
+      GIT_REPO="$optarg"
+      ;;
+    -t=* | --tags=*)
+      ANSIBLE_TAGS="$optarg"
+      ;;
+    -u=* | --username=*)
+      USER_CFG_FILE="$optarg"
+      ;;
+    -*)
+      echo "${red}Unknown option ${arg}, exiting...${reset}" && exit 1
+      ;;
+    *)
+      echo "${red}Unknown option or missing argument for ${arg}, exiting.${reset}"
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+main

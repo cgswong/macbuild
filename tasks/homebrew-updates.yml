@@ -1,0 +1,11 @@
+---
+- name: Deploy Homebrew plist file.
+  become: yes
+  copy:
+    src: 'homebrew.macbuild.brewupdate.plist'
+    dest: '/Library/LaunchDaemons/homebrew.macbuild.brewupdate.plist'
+    mode: '0644'
+    owner: 'root'
+  notify:
+    - reload launchd
+    - restart launchd

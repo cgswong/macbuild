@@ -1,0 +1,171 @@
+---
+# Variables for Developer configuration profile
+homebrew_installed_packages_devel:
+  - asciidoc
+  - asciinema
+  - bash
+  - bash-completion@2
+  - coreutils
+  - curl
+  - diffutils
+  - direnv
+  - dnsmasq
+  - dnsperf
+  - dnstracer
+  - docbook
+  - docker-cloud
+  - doxygen
+  - fdupes
+  - figlet
+  - file-formula
+  - findutils
+  - fontconfig
+  - gawk
+  - gettext
+  - ghostscript
+  - gifsicle
+  - git
+  - git-extras
+  - git-flow
+  - git-secrets
+  - giter8
+  - github-release
+  - gnu-sed
+  - gnu-tar
+  - gnu-which
+  - gnupg2
+  - gnutls
+  - go
+  - godep
+  - gpatch
+  - graphviz
+  - grep
+  - gzip
+  - htop
+  - httpie
+  - httpstat
+  - hub
+  - hugo
+  - iperf
+  - jq
+  - kops
+  - kubernetes-cli
+  - kubernetes-helm
+  - less
+  - lynx
+  - make
+  - mkdocs
+  - nmap
+  - node
+  - nomad
+  - nvm
+  - openssh
+  - packer
+  - pandoc
+  - pipenv
+  - pv
+  - pwgen
+  - pyenv
+  - pyenv-virtualenv
+  - pyenv-virtualenvwrapper
+  - rbenv
+  - rename
+  - rsync
+  - s3cmd
+  - slackcat
+  - ssh-copy-id
+  - sshfs
+  - sshuttle
+  - tcptrace
+  - terminal-notifier
+  - terraform
+  - tig
+  - tmux
+  - tree
+  - unzip
+  - vault
+  - watch
+  - wdiff
+  - webkit2png
+  - wget
+  - wrk
+  - { name: ffmpeg, install_options: "with-fdk-aac,with-openh264,with-openjpeg,with-openjpeg,with-snappy"}
+  - { name: vim, install_options: "with-luajit,with-python3,with-override-system-vi"}
+
+homebrew_uninstalled_packages_devel: []
+homebrew_taps_devel:
+  - caskroom/cask
+  - caskroom/fonts
+  - homebrew/services
+
+homebrew_cask_apps_devel:
+  - atom
+  - clipmenu
+  - docker
+  - flux
+  - flycut
+  - github-desktop
+  - imageoptim
+  - iterm2
+  - java
+  - launchcontrol
+  - licecap
+  - ngrok
+  - pgadmin4
+  - postman
+  - qlcolorcode
+  - qlmarkdown
+  - qlstephen
+  - quicklook-json
+  - recordit
+  - skitch
+  - slack
+  - sourcetree
+  - the-unarchiver
+  - transmission
+  - vagrant
+  - vagrant-manager
+  - virtualbox
+  - virtualbox-extension-pack
+  - wireshark
+
+homebrew_cask_uninstalled_apps_devel: []
+gem_packages_devel:
+  - name: octodown
+    state: latest
+  - name: travis
+    state: latest
+  - name: vagrant-dnsmasq
+    state: latest
+  - name: yaml-lint
+    state: latest
+
+npm_packages_devel:
+  - name: serverless
+    state: latest
+  - name: serverless-cf-vars
+    state: latest
+  - name: serverless-kms-secrets
+    state: latest
+
+pip_packages_devel:
+  - name: ansible-lint
+    state: latest
+  - name: boto3
+    state: latest
+  - name: docker-py
+    state: latest
+  - name: flake8
+    state: latest
+  - name: kube-shell
+    state: latest
+  - name: mkdocs
+    state: latest
+  - name: mkdocs-material
+    state: latest
+  - name: pylint
+    state: latest
+  - name: s4cmd
+    state: latest
+  - name: yamllint
+    state: latest
