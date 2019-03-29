@@ -13,6 +13,7 @@
 
 # Update
 - name: update and upgrade homebrew
+  become: False
   homebrew:
     update_homebrew: yes
     upgrade_all: yes

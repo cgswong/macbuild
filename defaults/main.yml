@@ -74,11 +74,11 @@ homebrew_installed_packages:
   - tree
   - unzip
   - vault
+  - vim
   - watch
   - wdiff
   - webkit2png
   - wget
-  - { name: vim, install_options: "with-luajit,with-python3,with-override-system-vi"}
 
 homebrew_uninstalled_packages: []
 
