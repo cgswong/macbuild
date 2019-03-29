@@ -13,13 +13,10 @@ dotfiles_files:
   - .bash_prompt
   - .bashrc
   - .curlrc
-  - .extra
-  - .functions
   - .gitconfig
   - .gitignore
   - .inputrc
   - .osx
-  - .path
   - .vimrc
   - .zshrc
 
