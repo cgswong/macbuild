@@ -2,10 +2,13 @@
 - hosts: localhost
   connection: local
 
+  vars_files:
+    - "defaults/main.yml"
+
   pre_tasks:
     - include_vars: "{{ item }}"
       with_fileglob:
-        - "vars/config-*.yml"
+        - "vars/config-devel.yml"
       tags:
         - always
 
@@ -22,6 +25,6 @@
 
     - import_tasks: "{{ item }}"
       with_fileglob:
-        - "tasks/config-*.yml"
+        - "{{ post_provision_tasks | default(omit) }}"
       tags:
         - profile

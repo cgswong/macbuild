@@ -6,7 +6,6 @@ pkg=${0##*/}
 
 GIT_REPO="https://github.com/cgswong/macbuild.git"
 MB_HOME="/usr/local/macbuild"
-USER_CFG_FILE=${USER}
 
 # set colors
 red=$(tput setaf 1)
@@ -67,9 +66,6 @@ Options:
       - homebrew
       - mas
       - osx
-
-  -u=, --username=[username]
-      User specific configuration file to include (defaults to ${USER_CFG_FILE}).
 EOM
 }
 
@@ -125,7 +121,7 @@ main() {
   if [ ! -z ${MB_INSTALL} ]; then
     log "Installing ${pkg}"
     git clone -q ${GIT_REPO} ${MB_HOME}
-    ln -s ${MB_HOME}/bin/macbuild /usr/local/bin/macbuild
+    ln -sf ${MB_HOME}/bin/macbuild /usr/local/bin/macbuild
     exit 0
   fi
 
@@ -135,13 +131,11 @@ main() {
   log "Getting required roles"
   ansible-galaxy install --role-file=requirements.yml --roles-path=${MB_HOME}/roles
 
-  if [ -f "${MB_HOME}/vars/${USER_CFG_FILE}.yml" ]; then
-    log "Running Ansible playbook for $username"
-    if [ ! -z ${ANSIBLE_TAGS} ]; then
-      ansible-playbook main.yml --inventory=hosts --ask-become-pass --tags "${ANSIBLE_TAGS}"
-    else
-      ansible-playbook main.yml --inventory=hosts --ask-become-pass
-    fi
+  log "Running Ansible playbook to setup configuration..."
+  if [ ! -z ${ANSIBLE_TAGS} ]; then
+    ansible-playbook macbuild.yml --inventory=hosts --ask-become-pass --tags "${ANSIBLE_TAGS}"
+  else
+    ansible-playbook macbuild.yml --inventory=hosts --ask-become-pass
   fi
   cd ${CWD}
 }
@@ -170,9 +164,6 @@ for arg in "$@"; do
       ;;
     -t=* | --tags=*)
       ANSIBLE_TAGS="$optarg"
-      ;;
-    -u=* | --username=*)
-      USER_CFG_FILE="$optarg"
       ;;
     -*)
       echo "${red}Unknown option ${arg}, exiting...${reset}" && exit 1
