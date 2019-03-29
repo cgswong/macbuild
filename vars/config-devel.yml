@@ -46,17 +46,14 @@ homebrew_installed_packages_devel:
   - httpstat
   - hub
   - hugo
-  - icu4c
   - iperf
   - jq
   - kops
   - kubernetes-cli
   - kubernetes-helm
   - less
-  - libevent
   - lynx
   - make
-  - mcrypt
   - mkdocs
   - nmap
   - node
@@ -103,17 +100,14 @@ homebrew_taps_devel:
 
 homebrew_cask_apps_devel:
   - atom
-  - chefdk
   - clipmenu
   - docker
   - flux
   - flycut
   - github-desktop
-  - google-chrome
   - imageoptim
   - iterm2
   - java
-  - keybase
   - launchcontrol
   - licecap
   - ngrok
@@ -127,7 +121,6 @@ homebrew_cask_apps_devel:
   - skitch
   - slack
   - sourcetree
-  - squidman
   - the-unarchiver
   - transmission
   - vagrant
@@ -138,15 +131,7 @@ homebrew_cask_apps_devel:
 
 homebrew_cask_uninstalled_apps_devel: []
 gem_packages_devel:
-  - name: bundler
-    state: latest
-  - name: kitchen-ec2
-    state: latest
-  - name: kitchen-vagrant
-    state: latest
   - name: octodown
-    state: latest
-  - name: rubocop
     state: latest
   - name: travis
     state: latest

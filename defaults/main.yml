@@ -96,7 +96,6 @@ homebrew_cask_apps:
   - clipmenu
   - flux
   - flycut
-  - google-chrome
   - imageoptim
   - iterm2
   - java

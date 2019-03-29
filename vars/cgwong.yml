@@ -37,7 +37,6 @@ homebrew_installed_packages:
   - bash-completion@2
   - bats
   - browser
-  - cf-cli
   - cli53
   - corectl
   - coreutils
@@ -79,7 +78,6 @@ homebrew_installed_packages:
   - httpstat
   - hub
   - hugo
-  - icu4c
   - iperf
   - jq
   - kops
@@ -87,7 +85,6 @@ homebrew_installed_packages:
   - kubernetes-helm
   - lame
   - less
-  - libevent
   - lynx
   - mcrypt
   - mkdocs
@@ -170,7 +167,6 @@ homebrew_cask_apps:
   - skitch
   - slack
   - sourcetree
-  - squidman
   - the-unarchiver
   - transmission
   - vagrant
@@ -179,7 +175,6 @@ homebrew_cask_apps:
   - virtualbox-extension-pack
   - vlc
   - wireshark
-  - xmind
 
 homebrew_cask_uninstalled_apps: []
 
@@ -192,15 +187,7 @@ homebrew_cask_uninstalled_apps: []
 gem_packages:
   - name: bundler
     state: latest
-  - name: kitchen-ec2
-    state: latest
-  - name: kitchen-vagrant
-    state: latest
   - name: octodown
-    state: latest
-  - name: rubocop
-    state: latest
-  - name: travis
     state: latest
   - name: vagrant-dnsmasq
     state: latest
