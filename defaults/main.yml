@@ -4,7 +4,7 @@ configure_osx: yes
 
 osx_script: "~/.osx --no-restart"
 
-dotfiles_repo: "https://github.platforms.engineering/datasvcs/dotfiles.git"
+dotfiles_repo: "https://github.com/cgswong/dotfiles.git"
 dotfiles_repo_accept_hostkey: yes
 dotfiles_repo_local_destination: "~/Documents/dotfiles"
 dotfiles_home: "~"
@@ -157,3 +157,6 @@ pip_packages:
     state: latest
   - name: yamllint
     state: latest
+
+# Glob pattern to Ansible task files to run after all other tasks are finished.
+post_provision_tasks: []

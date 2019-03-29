@@ -1,10 +1,44 @@
 ---
-# Variables for Developer configuration profile
-homebrew_installed_packages_devel:
-  - asciidoc
+configure_dotfiles: yes
+configure_osx: yes
+
+osx_script: "~/.osx --no-restart"
+
+dotfiles_repo: "https://github.com/cgswong/dotfiles.git"
+dotfiles_repo_accept_hostkey: yes
+dotfiles_repo_local_destination: "~/dotfiles"
+dotfiles_home: "~"
+dotfiles_files:
+  - ".bash_profile"
+  - ".bash_prompt"
+  - ".bashrc"
+  - ".curlrc"
+  - ".extra"
+  - ".functions"
+  - ".gitconfig"
+  - ".gitignore"
+  - ".inputrc"
+  - ".osx"
+  - ".path"
+  - ".vimrc"
+  - ".zshrc"
+
+# Homebrew, see `geerlingguy.homebrew` role (https://github.com/geerlingguy/ansible-role-homebrew) documentation for usage instructions.
+homebrew_brewfile_dir: "~"
+homebrew_use_brewfile: true
+
+homebrew_installed_packages:
   - asciinema
+  - asciidoc
+  - autoconf
+  - automake
+  - awscli
   - bash
   - bash-completion@2
+  - bats
+  - browser
+  - cli53
+  - corectl
   - coreutils
   - curl
   - diffutils
@@ -15,10 +49,12 @@ homebrew_installed_packages_devel:
   - docbook
   - docker-cloud
   - doxygen
+  - etcd
   - fdupes
   - figlet
   - file-formula
   - findutils
+  - fleetctl
   - fontconfig
   - gawk
   - gettext
@@ -30,16 +66,12 @@ homebrew_installed_packages_devel:
   - git-secrets
   - giter8
   - github-release
-  - gnu-sed
-  - gnu-tar
-  - gnu-which
   - gnupg2
   - gnutls
   - go
   - godep
   - gpatch
   - graphviz
-  - grep
   - gzip
   - htop
   - httpie
@@ -51,10 +83,12 @@ homebrew_installed_packages_devel:
   - kops
   - kubernetes-cli
   - kubernetes-helm
+  - lame
   - less
   - lynx
-  - make
+  - mcrypt
   - mkdocs
+  - neovim
   - nmap
   - node
   - nomad
@@ -90,24 +124,36 @@ homebrew_installed_packages_devel:
   - wget
   - wrk
   - { name: ffmpeg, install_options: "with-fdk-aac,with-openh264,with-openjpeg,with-openjpeg,with-snappy"}
+  - { name: gnu-sed, install_options: "with-default-names"}
+  - { name: gnu-tar, install_options: "with-default-names"}
+  - { name: gnu-which, install_options: "with-default-names"}
+  - { name: grep, install_options: "with-default-names"}
+  - { name: make, install_options: "with-default-names"}
   - { name: vim, install_options: "with-luajit,with-python3,with-override-system-vi"}
 
-homebrew_uninstalled_packages_devel: []
-homebrew_taps_devel:
+homebrew_uninstalled_packages: []
+
+homebrew_taps:
   - caskroom/cask
   - caskroom/fonts
   - homebrew/services
 
-homebrew_cask_apps_devel:
+homebrew_cask_appdir: "/Applications"
+homebrew_cask_apps:
   - atom
+  - chefdk
   - clipmenu
   - docker
+  - evernote
   - flux
   - flycut
   - github-desktop
+  - google-chrome
+  - handbrake
   - imageoptim
   - iterm2
   - java
+  - keybase
   - launchcontrol
   - licecap
   - ngrok
@@ -127,20 +173,32 @@ homebrew_cask_apps_devel:
   - vagrant-manager
   - virtualbox
   - virtualbox-extension-pack
+  - vlc
   - wireshark
 
-homebrew_cask_uninstalled_apps_devel: []
-gem_packages_devel:
-  - name: octodown
+homebrew_cask_uninstalled_apps: []
+
+# Install packages from other package managers.
+# Note: Ensure the required package managers are installed, eg. through homebrew.
+#gem_packages: []
+  # - name: bundler
+  #   state: present # present/absent/latest, default: present
+  #   version: "~> 1.15.1"
+gem_packages:
+  - name: bundler
     state: latest
-  - name: travis
+  - name: octodown
     state: latest
   - name: vagrant-dnsmasq
     state: latest
   - name: yaml-lint
     state: latest
 
-npm_packages_devel:
+#npm_packages: []
+  # - name: webpack
+  #   state: present # present/absent/latest, default: present
+  #   version: "^2.6"
+npm_packages:
   - name: serverless
     state: latest
   - name: serverless-cf-vars
@@ -148,7 +206,11 @@ npm_packages_devel:
   - name: serverless-kms-secrets
     state: latest
 
-pip_packages_devel:
+#pip_packages: []
+  # - name: mkdocs
+  #   state: present # present/absent/latest, default: present
+  #   version: "0.16.3"
+pip_packages:
   - name: ansible-lint
     state: latest
   - name: boto3
