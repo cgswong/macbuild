@@ -86,6 +86,7 @@ homebrew_installed_packages:
   - iperf
   - jq
   - kops
+  - kubectx
   - kubernetes-cli
   - kubernetes-helm
   - lame
@@ -112,6 +113,7 @@ homebrew_installed_packages:
   - rename
   - rsync
   - s3cmd
+  - skaffold
   - slackcat
   - ssh-copy-id
   - sshuttle
