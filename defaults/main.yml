@@ -58,7 +58,6 @@ homebrew_installed_packages:
   - lynx
   - make
   - mcrypt
-  - mkdocs
   - node
   - nvm
   - openssh
@@ -69,6 +68,7 @@ homebrew_installed_packages:
   - slackcat
   - ssh-copy-id
   - sshuttle
+  - terraform
   - tcptrace
   - tmux
   - tree
@@ -139,21 +139,21 @@ npm_packages:
   # - name: mkdocs
   #   state: present # present/absent/latest, default: present
   #   version: "0.16.3"
-pip_packages:
-  - name: ansible-lint
-    state: latest
-  - name: flake8
-    state: latest
-  - name: mkdocs
-    state: latest
-  - name: mkdocs-material
-    state: latest
-  - name: pylint
-    state: latest
-  - name: s4cmd
-    state: latest
-  - name: yamllint
-    state: latest
+#pip_packages:
+#  - name: ansible-lint
+#    state: latest
+#  - name: flake8
+#    state: latest
+#  - name: mkdocs
+#    state: latest
+#  - name: mkdocs-material
+#    state: latest
+#  - name: pylint
+#    state: latest
+#  - name: s4cmd
+#    state: latest
+#  - name: yamllint
+#    state: latest
 
 # Glob pattern to Ansible task files to run after all other tasks are finished.
 post_provision_tasks: []
