@@ -83,7 +83,6 @@ homebrew_installed_packages:
 homebrew_uninstalled_packages: []
 
 homebrew_taps:
-  - caskroom/cask
   - caskroom/fonts
   - homebrew/services
 
