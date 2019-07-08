@@ -87,24 +87,24 @@ homebrew_taps:
 #  - homebrew/services
 
 homebrew_cask_appdir: "/Applications"
-homebrew_cask_apps:
-  - atom
-  - clipmenu
-  - flux
-  - flycut
-  - imageoptim
-  - iterm2
-  - java
-  - licecap
-  - qlcolorcode
-  - qlmarkdown
-  - qlstephen
-  - quicklook-json
-  - recordit
-  - skitch
-  - slack
-  - the-unarchiver
-  - transmission
+homebrew_cask_apps: []
+#  - atom
+#  - clipmenu
+#  - flux
+#  - flycut
+#  - imageoptim
+#  - iterm2
+#  - java
+#  - licecap
+#  - qlcolorcode
+#  - qlmarkdown
+#  - qlstephen
+#  - quicklook-json
+#  - recordit
+#  - skitch
+#  - slack
+#  - the-unarchiver
+#  - transmission
 
 homebrew_cask_uninstalled_apps: []
 
@@ -138,7 +138,7 @@ npm_packages:
   # - name: mkdocs
   #   state: present # present/absent/latest, default: present
   #   version: "0.16.3"
-#pip_packages:
+pip_packages: []
 #  - name: ansible-lint
 #    state: latest
 #  - name: flake8
