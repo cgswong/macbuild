@@ -3,6 +3,7 @@ ansible
 ansible-lint
 asciidoc
 asciinema
+autopep8
 aws-cdk
 aws-shell
 aws/tap/copilot-cli
@@ -98,7 +99,6 @@ watch
 wdiff
 webkit2png
 wget
-xpra
 yamllint
 youtube-dl
 zsh-autosuggestions
