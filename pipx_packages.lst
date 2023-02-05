@@ -1,8 +1,0 @@
-create-python-package
-git-remote-codecommit
-mkdocs
-mkdocs-material
-pylama
-pytest
-rdk
-s4cmd
