@@ -1,16 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Initialize macOS for daily use by installing specified tools, and updating configurations.
 
 # Set values
 SCRIPT_NAME=${0##*/}
 SCRIPT_VERSION="2.0.0"
-SCRIPT_REPO=${SCRIPT_REPO:-"https://github.com/cgswong/macbuild.git"}
-SCRIPT_HOME=${SCRIPT_HOME:-"~/.macbuild"}
+SCRIPT_HOME=$(readlink -f ${0%%/*})
 LOG_LEVEL=${LOG_LEVEL:-"INFO"}
-LOG_FILE=${LOG_FILE:-"~/.macbuild/macbuild.log"}
-OS_UPDATE_DIR="/Library/LaunchDaemons"
-OS_UPDATE_FILE="homebrew.macbuild.brewupdate.plist"
-PKG_FILE=${PKG_FILE:-"${SCRIPT_HOME}/packages.ini"}
+LOG_FILE=${LOG_FILE:-"${SCRIPT_HOME}/logs/macbuild.log"}
+OS_UPDATE_FILE="macbuild.update.agent.plist"
+OS_UPDATE_FILE_PATH="/Library/LaunchAgents/${OS_UPDATE_FILE}"
+OS_UPDATE_FILE_HOME="${SCRIPT_HOME}/files/${OS_UPDATE_FILE}"
+PKG_FILE=${PKG_FILE:-"${SCRIPT_HOME}/files/packages.ini"}
 
 # set colors
 red=$(tput setaf 1)
@@ -35,23 +35,16 @@ log() {
   fi
 }
 
-print_banner() {
-  # Print banner
-  echo "${green}                         _             _  _      _    ${reset}"
-  echo "${green} _ __ ___    __ _   ___ | |__   _   _ (_)| |  __| |   ${reset}"
-  echo "${green}| '_ \` _ \  / _\` | / __|| '_ \ | | | || || | / _\` |${reset}"
-  echo "${green}| | | | | || (_| || (__ | |_) || |_| || || || (_| |   ${reset}"
-  echo "${green}|_| |_| |_| \__,_| \___||_.__/  \__,_||_||_| \__,_|   ${reset} v${SCRIPT_VERSION}"
-  echo ""
+print_version() {
+  # Print vesion
+  cat <<-DESC
+  ${SCRIPT_NAME} v${SCRIPT_VERSION}
+DESC
 }
 
 usage() {
-  print_banner
   cat <<-DESC
-
----------------------
-
-${SCRIPT_NAME} - Install tools and configure macOS.
+Install tools and configure macOS.
 
 Usage: ${SCRIPT_NAME} [options]
 
@@ -59,14 +52,17 @@ Options:
   -h, --help
       Output help (this message).
 
-  --home=DIR
-      Set as script home to locate installation files.
+  --version
+      Show current version.
 
-  --log-level=INFO|WARN|FAIL|DEBUG
+  --log-level=[INFO | WARN | FAIL | DEBUG]
       Set logging level to use.
 
-  --repo=GITHUB_REPO_URL
-      GitHub repository to use for remote configuration (default: ${SCRIPT_REPO}).
+  --update-only
+      Update installed tooling only, no new installs.
+
+  --install-only=[brew | apps | python | node]
+      Install or reinstall the specified tools only.
 DESC
 }
 
@@ -108,23 +104,23 @@ install_homebrew() {
 setup_updating() {
   # Manage updates using `launchctl`
   log $LOG_LEVEL "Setting up launchctl..."
-  if [[ -r "${OS_UPDATE_DIR}/${OS_UPDATE_FILE}" ]]; then
-    if [[ -r "${SCRIPT_HOME}/files/${OS_UPDATE_FILE}" ]]; then
+  if [[ -r "${OS_UPDATE_FILE_PATH}" ]]; then
+    if [[ -r "${OS_UPDATE_FILE_HOME}" ]]; then
       sudo launchctl stop "${OS_UPDATE_FILE}"
-      sudo launchctl unload "${OS_UPDATE_DIR}/${OS_UPDATE_FILE}"
+      sudo launchctl unload "${OS_UPDATE_FILE_PATH}"
     else
       log WARN "File not found! Unable to reload ${OS_UPDATE_FILE} for launchctl."
     fi
   fi
-  if [[ -r "${SCRIPT_HOME}/files/${OS_UPDATE_FILE}" ]]; then
-    cp "${SCRIPT_HOME}/files/${OS_UPDATE_FILE}" "${OS_UPDATE_DIR}/${OS_UPDATE_FILE}"
-    sudo chmod 0644 "${OS_UPDATE_DIR}/${OS_UPDATE_FILE}"
-    sudo chown root "${OS_UPDATE_DIR}/${OS_UPDATE_FILE}"
-    sudo launchctl load "${OS_UPDATE_DIR}/${OS_UPDATE_FILE}"
+  if [[ -r "${OS_UPDATE_FILE_HOME}" ]]; then
+    cp "${OS_UPDATE_FILE_HOME}" "${OS_UPDATE_FILE_PATH}"
+    sudo chmod 0644 "${OS_UPDATE_FILE_PATH}"
+    sudo chown root "${OS_UPDATE_FILE_PATH}"
+    sudo launchctl load "${OS_UPDATE_FILE_PATH}"
     sudo launchctl start "${OS_UPDATE_FILE}"
     log $LOG_LEVEL "Completed launchctl setup!"
   else
-    log WARN "File not found! Missing ${SCRIPT_HOME}/files/${OS_UPDATE_FILE} for launchctl."
+    log WARN "File not found! Missing ${OS_UPDATE_FILE_HOME} for launchctl."
   fi
 }
 
@@ -167,15 +163,7 @@ ini_parser() {
 
 install_python_tools() {
   # Install Python packages
-  if command -v python3 &>/dev/null; then
-    log $LOG_LEVEL "Installing pipx..."
-    python3 -m pip install --upgrade pipx &>/dev/null
-    if [[ $? -eq 0 ]]; then
-      log $LOG_LEVEL "Completed pipx install!"
-    else
-      log WARN "Error during pipx install!"
-    fi
-
+  if command -v pipx &>/dev/null; then
     if [[ -r "${PKG_FILE}" ]]; then
       log $LOG_LEVEL "Installing Python packages..."
       for pkg in ini_parser 'pipx'; do
@@ -185,51 +173,93 @@ install_python_tools() {
     else
       log WARN "File not found! Missing ${PKG_FILE} file."
     fi
+  else
+    log WARN "Required pipx missing, skipping Python tools install."
   fi
 }
 
 install_homebrew_tools() {
   # Install Homebrew tools
-  if [[ -r "${PKG_FILE}" ]]; then
-    log $LOG_LEVEL "Installing Homebrew tools..."
-    for pkg in ini_parser 'homebrew'; do
-      brew install --quiet ${pkg}
-    done
-    log $LOG_LEVEL "Complete Homebrew tools install!"
+  if command -v brew &>/dev/null; then
+    if [[ -r "${PKG_FILE}" ]]; then
+      log $LOG_LEVEL "Installing Homebrew tools..."
+      for pkg in ini_parser 'homebrew'; do
+        brew install --quiet ${pkg}
+      done
+      log $LOG_LEVEL "Complete Homebrew tools install!"
+    else
+      log WARN "File not found! Missing ${PKG_FILE} file."
+    fi
   else
-    log WARN "File not found! Missing ${PKG_FILE} file."
+    log WARN "Required brew missing, skipping Homebrew tools install."
   fi
 }
 
 install_homebrew_apps() {
   # Install Homebrew (cask) apps
-  if [[ -r "${PKG_FILE}" ]]; then
-    log $LOG_LEVEL "Installing Homebrew apps..."
-    for pkg in ini_parser 'cask'; do
-      brew install --cask --quiet ${pkg}
-    done
-    log $LOG_LEVEL "Complete Homebrew apps install!"
+  if command -v brew &>/dev/null; then
+    if [[ -r "${PKG_FILE}" ]]; then
+      log $LOG_LEVEL "Installing Homebrew apps..."
+      for pkg in ini_parser 'cask'; do
+        brew install --cask --quiet ${pkg}
+      done
+      log $LOG_LEVEL "Complete Homebrew apps install!"
+    else
+      log WARN "File not found! Missing ${PKG_FILE} file."
+    fi
   else
-    log WARN "File not found! Missing ${PKG_FILE} file."
+    log WARN "Required brew missing, skipping Homebrew apps install."
   fi
 }
 
 install_npm_tools() {
   # Install NPM packages
-  if [[ -r "${PKG_FILE}" ]]; then
-    log $LOG_LEVEL "Installing NPM tools..."
-    for pkg in ini_parser 'npm'; do
-      npm install --global ${pkg}
-    done
-    log $LOG_LEVEL "Complete NPM tools install!"
+  if command -v npm &>/dev/null; then
+    if [[ -r "${PKG_FILE}" ]]; then
+      log $LOG_LEVEL "Installing NPM packages..."
+      for pkg in ini_parser 'npm'; do
+        npm install --global ${pkg}
+      done
+      log $LOG_LEVEL "Complete NPM packages install!"
+    else
+      log WARN "File not found! Missing ${PKG_FILE} file."
+    fi
   else
-    log WARN "File not found! Missing ${PKG_FILE} file."
+    log WARN "Required npm missing, skipping Node JavaScript packages install."
   fi
 }
 
+update_tools() {
+  # Update tools
+  if command -v brew &>/dev/null; then
+    log $LOG_LEVEL "Starting Homebrew tools update..."
+    brew upgrade --quiet
+  else
+    log ERROR "Homebrew executable (brew) not found, update skipped."
+  fi
+  if command -v npm &>/dev/null; then
+    log $LOG_LEVEL "Starting NPM tools update..."
+    npm install npm --global --silent
+    npm update --global --silent
+  else
+    log ERROR "NPM not found, update skipped."
+  fi
+  if command -v pipx &>/dev/null; then
+    log $LOG_LEVEL "Starting Python tools update..."
+    pipx upgrade-all
+  else
+    log ERROR "pipx not found, update skipped."
+  fi
+  log $LOG_LEVEL "Starting macOS update..."
+  sudo softwareupdate --agree-to-license --install --all --restart
+  log $LOG_LEVEL "Completed macOS update!"
+}
+
 main() {
-  log $LOG_LEVEL "Setting up home directory..."
-  mkdir -p ${SCRIPT_HOME}
+  if [[ ! -d ${SCRIPT_HOME} ]]; then
+    log $LOG_LEVEL "Setting up script directories..."
+    mkdir -p ${SCRIPT_HOME}/{logs,files,bin}
+  fi
   log $LOG_LEVEL "Checking for SUDO password..."
   sudo -v
   export BECOME_ASK_PASS=True
@@ -241,20 +271,45 @@ main() {
     kill -0 "$$" || exit
   done 2>/dev/null &
 
+  if [[ ${UPDATE_ONLY} == "yes" ]]; then
+    log $LOG_LEVEL "Running updates only..."
+    update_tools
+    log $LOG_LEVEL "Completed updates!"
+    exit
+  fi
+
   # Install XCode CLI Tools
   install_cli_tools
-
   # Install/Update Homebrew
   install_homebrew
   setup_updating
-
-  # Install Python packages
-  install_python_tools
-  # Install Homebrew packages
-  install_homebrew_tools
-  install_homebrew_apps
-  # Install NPM packages
-  install_npm_tools
+  case $INSTALL_ONLY in
+  "brew")
+    # Install Homebrew packages
+    install_homebrew_tools
+    ;;
+  "apps")
+    # Install Homebrew Apps
+    install_homebrew_apps
+    ;;
+  "python")
+    # Install Python packages
+    install_python_tools
+    ;;
+  "node")
+    # Install NPM packages
+    install_npm_tools
+    ;;
+  "*")
+    # Install Python packages
+    install_python_tools
+    # Install Homebrew packages
+    install_homebrew_tools
+    install_homebrew_apps
+    # Install NPM packages
+    install_npm_tools
+    ;;
+  esac
 }
 
 # Process command line
@@ -273,14 +328,17 @@ for arg in "$@"; do
   -h | --help)
     usage && exit 0
     ;;
-  --home=*)
-    export SCRIPT_HOME="$optarg"
+  --version)
+    print_version && exit 0
     ;;
   --log-level=*)
     export LOG_LEVEL="$optarg"
     ;;
-  --repo=*)
-    export SCRIPT_REPO="$optarg"
+  --update-only)
+    export UPDATE_ONLY="yes"
+    ;;
+  --install-only=*)
+    export INSTALL_ONLY="$optarg"
     ;;
   -*)
     log FAIL "Unknown option ${arg}, exiting."
