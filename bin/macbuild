@@ -9,8 +9,8 @@ LOG_LEVEL=${LOG_LEVEL:-"INFO"}
 LOG_FILE=${LOG_FILE:-"${SCRIPT_HOME}/logs/macbuild.log"}
 OS_UPDATE_FILE="macbuild.update.agent.plist"
 OS_UPDATE_FILE_PATH="/Library/LaunchAgents/${OS_UPDATE_FILE}"
-OS_UPDATE_FILE_HOME="${SCRIPT_HOME}/files/${OS_UPDATE_FILE}"
-PKG_FILE=${PKG_FILE:-"${SCRIPT_HOME}/files/packages.ini"}
+OS_UPDATE_FILE_HOME="${SCRIPT_HOME}/../files/${OS_UPDATE_FILE}"
+PKG_FILE=${PKG_FILE:-"${SCRIPT_HOME}/../files/packages.ini"}
 
 # set colors
 red=$(tput setaf 1)
