@@ -3,14 +3,15 @@
 
 # Set values
 SCRIPT_NAME=${0##*/}
-SCRIPT_VERSION="2.0.0"
 SCRIPT_HOME=$(readlink -f ${0%%/*})
+SCRIPT_VERSION=$(cat ${SCRIPT_HOME}/VERSION.txt)
 LOG_LEVEL=${LOG_LEVEL:-"INFO"}
-LOG_FILE=${LOG_FILE:-"${SCRIPT_HOME}/logs/macbuild.log"}
+LOG_FILE_NAME=$(basename ${SCRIPT_NAME} .sh).log
+LOG_FILE=${LOG_FILE:-"${SCRIPT_HOME}/logs/${LOG_FILE_NAME}"}
 OS_UPDATE_FILE="macbuild.update.agent.plist"
 OS_UPDATE_FILE_PATH="/Library/LaunchAgents/${OS_UPDATE_FILE}"
-OS_UPDATE_FILE_HOME="${SCRIPT_HOME}/../files/${OS_UPDATE_FILE}"
-PKG_FILE=${PKG_FILE:-"${SCRIPT_HOME}/../files/packages.ini"}
+OS_UPDATE_FILE_HOME="${SCRIPT_HOME}/files/${OS_UPDATE_FILE}"
+PKG_FILE=${PKG_FILE:-"${SCRIPT_HOME}/files/packages.ini"}
 
 # set colors
 red=$(tput setaf 1)
@@ -38,13 +39,13 @@ log() {
 print_version() {
   # Print vesion
   cat <<-DESC
-  ${SCRIPT_NAME} v${SCRIPT_VERSION}
+  ${SCRIPT_NAME} ${SCRIPT_VERSION}
 DESC
 }
 
 usage() {
   cat <<-DESC
-Install tools and configure macOS.
+Install tools and configure macOS. Services used include: Homebrew, npm (Node.JS), pipx (Python), gem (Ruby), and mise.
 
 Usage: ${SCRIPT_NAME} [options]
 
@@ -61,7 +62,7 @@ Options:
   --update-only
       Update installed tooling only, no new installs.
 
-  --install-only=[brew | apps | python | node]
+  --install-only=[brew | apps | python | node | ruby | mise | all]
       Install or reinstall the specified tools only.
 DESC
 }
@@ -229,6 +230,40 @@ install_npm_tools() {
   fi
 }
 
+install_ruby_tools() {
+  # Install Ruby packages
+  if command -v gem &>/dev/null; then
+    if [[ -r "${PKG_FILE}" ]]; then
+      log $LOG_LEVEL "Installing Ruby GEMs..."
+      for pkg in ini_parser 'gem'; do
+        gem install ${pkg}
+      done
+      log $LOG_LEVEL "Complete Ruby GEMs install!"
+    else
+      log WARN "File not found! Missing ${PKG_FILE} file."
+    fi
+  else
+    log WARN "Required gem missing, skipping Ruby GEMs install."
+  fi
+}
+
+install_mise_tools() {
+  # Install MISE packages
+  if command -v mise &>/dev/null; then
+    if [[ -r "${PKG_FILE}" ]]; then
+      log $LOG_LEVEL "Installing MISE tools..."
+      for pkg in ini_parser 'mise'; do
+        mise use --global ${pkg}
+      done
+      log $LOG_LEVEL "Complete MISE tools install!"
+    else
+      log WARN "File not found! Missing ${PKG_FILE} file."
+    fi
+  else
+    log WARN "Required mise missing, skipping MISE tools install."
+  fi
+}
+
 update_tools() {
   # Update tools
   if command -v brew &>/dev/null; then
@@ -246,9 +281,15 @@ update_tools() {
   fi
   if command -v pipx &>/dev/null; then
     log $LOG_LEVEL "Starting Python tools update..."
-    pipx upgrade-all
+    pipx reinstall-all
   else
     log ERROR "pipx not found, update skipped."
+  fi
+  if command -v mise &>/dev/null; then
+    log $LOG_LEVEL "Starting mise tools update..."
+    mise upgrade
+  else
+    log ERROR "mise not found, update skipped."
   fi
   log $LOG_LEVEL "Starting macOS update..."
   sudo softwareupdate --agree-to-license --install --all --restart
@@ -300,7 +341,15 @@ main() {
     # Install NPM packages
     install_npm_tools
     ;;
-  "*")
+  "gems")
+    # Install Ruby packages
+    install_ruby_tools
+    ;;
+  "mise")
+    # Install mise packages
+    install_mise_tools
+    ;;
+  "all")
     # Install Python packages
     install_python_tools
     # Install Homebrew packages
@@ -308,6 +357,16 @@ main() {
     install_homebrew_apps
     # Install NPM packages
     install_npm_tools
+    # Install Python packages
+    install_python_tools
+    # Install Rubypackages
+    install_ruby_tools
+    # Install mise packages
+    install_mise_tools
+    ;;
+  "*")
+    log FAIL "Unknown option, exiting."
+    usage && exit 1
     ;;
   esac
 }
@@ -346,8 +405,7 @@ for arg in "$@"; do
     ;;
   *)
     log FAIL "Unknown option or missing argument for ${arg}, exiting."
-    usage
-    exit 1
+    usage && exit 1
     ;;
   esac
 done
