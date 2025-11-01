@@ -3,25 +3,25 @@
 <plist version="1.0">
   <dict>
     <key>Label</key>
-    <string>homebrew.macbuild.brewupdate.agent</string>
-    <key>ProcessType</key>
-    <string>Background</string>
+    <string>com.user.macbuild_update</string>
     <key>EnvironmentVariables</key>
     <dict>
       <key>TERM</key>
       <string>ansi</string>
       <key>PATH</key>
-      <string>/opt/macbuild/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin</string>
+      <string>/Users/carrwong/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin</string>
     </dict>
     <key>ProgramArguments</key>
     <array>
-      <string>macbuild</string>
+      <string>/Users/carrwong/bin/macbuild</string>
       <string>--update-only</string>
     </array>
     <key>StartCalendarInterval</key>
     <dict>
+      <key>Weekday</key>
+      <integer>6</integer>
       <key>Hour</key>
-      <integer>11</integer>
+      <integer>9</integer>
       <key>Minute</key>
       <integer>0</integer>
     </dict>
