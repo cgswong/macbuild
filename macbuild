@@ -1,319 +1,352 @@
 #!/usr/bin/env bash
-# Initialize macOS for daily use by installing specified tools, and updating configurations.
+# macOS system configuration and package management tool
+# Installs packages via Homebrew, Python (uv), Node (pnpm), Ruby (gem), and mise
 
-# Set values
-SCRIPT_NAME=${0##*/}
-SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-SCRIPT_HOME=$(cd "$SCRIPT_DIR/.." && pwd)
-SCRIPT_VERSION="1.1.0"
+set -euo pipefail  # Exit on error, undefined vars, pipe failures
 
+# -- Configuration --
+readonly SCRIPT_NAME=${0##*/}
+readonly SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+readonly SCRIPT_HOME=$(cd "$SCRIPT_DIR/.." && pwd)
+readonly SCRIPT_VERSION="2.0.0"
+
+# Environment variables with defaults
 LOG_LEVEL=${LOG_LEVEL:-"INFO"}
-LOG_FILE_NAME=${SCRIPT_NAME%.*}.log
 LOG_DIR=${LOG_DIR:-"~/.${SCRIPT_NAME}/logs"}
-[[ -d $LOG_DIR ]] || mkdir -p $LOG_DIR
-LOG_FILE=${LOG_FILE:-"${LOG_DIR}/${LOG_FILE_NAME}"}
-
-OS_UPDATE_FILE="com.user.macbuild_update.plist"
-OS_UPDATE_FILE_PATH="~/Library/LaunchAgents"
-OS_UPDATE_FILE_HOME="${SCRIPT_HOME}/files/${OS_UPDATE_FILE}"
-
 PKG_FILE=${PKG_FILE:-"${SCRIPT_HOME}/files/packages.ini"}
 
-# Set colors
-red=$(tput setaf 1)
-green=$(tput setaf 2)
-yellow=$(tput setaf 3)
-blue=$(tput setaf 4)
-purple=$(tput setaf 5)
-cyan=$(tput setaf 6)
-white=$(tput setaf 7)
-reset=$(tput sgr0)
+# Derived paths
+readonly LOG_FILE="${LOG_DIR}/${SCRIPT_NAME}.log"
+readonly OS_UPDATE_FILE="com.user.macbuild_update.plist"
+readonly OS_UPDATE_PATH="~/Library/LaunchAgents"
 
-# Print messages to screen
-log() {
-  if [[ "${1}" == "DEBUG" ]]; then
-    if [[ "$LOG_LEVEL" == "DEBUG" ]]; then
-      echo "$(date +"%F %T") [${SCRIPT_NAME}] ${2}" >>${LOG_FILE}
-      echo "$(date +"%F %T") [DEBUG] ${2}"
+LOG_FILE_NAME=${SCRIPT_NAME%.*}.log
+OS_UPDATE_FILE_HOME="${SCRIPT_HOME}/files/${OS_UPDATE_FILE}"
+
+# -- Logging functions --
+
+# Initialize log directory and file
+setup_logging() {
+  [[ ! -d "$LOG_DIR" ]] && mkdir -p "$LOG_DIR"
+  touch "$LOG_FILE" || {
+    printf "ERROR: Cannot create log file %s\n" "$LOG_FILE" >&2
+    exit 1
+  }
+}
+
+# Log messages with timestamp, level, and color coding
+log_message() {
+  local level="$1"
+  local message="$2"
+  local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
+  # Always log to file
+  printf "%s [%s] %s\n" "$timestamp" "$level" "$message" >> "$LOG_FILE"
+
+  # Console output with color coding
+  case "$level" in
+    ERROR)
+      printf "\033[31m%s [ERROR] %s\033[0m\n" "$timestamp" "$message" >&2 ;;
+    WARN)
+      printf "\033[33m%s [WARN] %s\033[0m\n" "$timestamp" "$message" >&2 ;;
+    INFO)
+      printf "%s [INFO] %s\n" "$timestamp" "$message" ;;
+    DEBUG)
+      [[ "$LOG_LEVEL" == "DEBUG" ]] && printf "%s [DEBUG] %s\n" "$timestamp" "$message" ;;
+  esac
+}
+
+# -- Utility functions --
+
+# Check if command exists in PATH
+command_exists() {
+  command -v "$1" &>/dev/null
+}
+
+# Verify file exists and is readable
+check_file_readable() {
+  [[ -r "$1" ]] || {
+    log_message "ERROR" "File not readable: $1"
+    return 1
+  }
+}
+
+# Execute command with retry logic for network operations
+run_with_retry() {
+  local cmd="$1"
+  local max_attempts="${2:-3}"
+
+  for ((attempt=1; attempt<=max_attempts; attempt++)); do
+    log_message "DEBUG" "Attempt $attempt: $cmd"
+    if eval "$cmd"; then
+      return 0
     fi
-  elif [[ "${1}" == "FAIL" ]]; then
-    echo "${red}$(date +"%F %T") ${2}${reset}"
-  elif [[ "${1}" == "WARN" ]]; then
-    echo "${yellow}$(date +"%F %T") ${2}${reset}"
-  else
-    echo "$(date +"%F %T") ${2}"
-  fi
+    [[ $attempt -lt $max_attempts ]] && {
+      log_message "WARN" "Command failed, retrying in 2 seconds (attempt $attempt/$max_attempts)"
+      sleep 2
+    }
+  done
+
+  log_message "ERROR" "Command failed after $max_attempts attempts: $cmd"
+  return 1
 }
 
+# -- Help and version --
+
+# Display version information
 print_version() {
-  # Print vesion
-  cat <<-DESC
-  ${SCRIPT_NAME} ${SCRIPT_VERSION}
-DESC
+  printf "%s %s\n" "$SCRIPT_NAME" "$SCRIPT_VERSION"
 }
 
-usage() {
+# Display usage instructions and available options
+print_usage() {
   cat <<-DESC
 Install tools and configure macOS. Services used include: Homebrew, pnpm (Node.JS), uv (Python), gem (Ruby), and mise.
 
 Usage: ${SCRIPT_NAME} [options]
 
 Options:
-  -h, --help
-      Output help (this message).
+  -h, --help              Show this help message
+  --version               Show version information
+  --log-level LEVEL       Set logging level (DEBUG|INFO|WARN|ERROR)
+  --update-only           Update existing tools only
+  --install TYPE          Install specific package type
+                         (brew | apps | python | node | ruby | mise | all)
 
-  --version
-      Show current version.
+Environment Variables:
+  LOG_LEVEL              Logging level (default: INFO)
+  LOG_DIR                Log directory (default: ~/.macbuild/logs)
+  PKG_FILE               Package configuration file
 
-  --log-level=[INFO | WARN | FAIL | DEBUG]
-      Set logging level to use.
-
-  --update-only
-      Update installed tooling only, no new installs.
-
-  --install-only=[brew | apps | python | node | ruby | mise | all]
-      Install or reinstall the specified tools only.
+Examples:
+  macbuild                        # Full installation
+  macbuild --update-only          # Update existing packages
+  macbuild --install python       # Install Python packages only
+  LOG_LEVEL=DEBUG macbuild        # Enable debug logging
 DESC
 }
 
-setup_bash_it() {
-  # Get and configure bash-it, or update if already exists.
-  if command -v bash-it &>/dev/null; then
-    log INFO "Updating bash-it."
-    bash-it update
-    if [[ $? -eq 0 ]]; then
-      log INFO "Completed bash-it update."
-    else
-      log WARN "Error updating bash-it."
-    fi
-  else
-    log INFO "Installing bash-it."
-    git clone https://github.com/Bash-it/bash-it.git
-    ~/.bash_it/install.sh --silent
-    if [[ $? -eq 0 ]]; then
-      log INFO "Completed bash-it install."
-    else
-      log WARN "Error installing bash-it."
-    fi
-  fi
-}
+# -- Package management --
 
-install_homebrew() {
-  # Install Homebrew
-  if command -v brew &>/dev/null; then
-    log INFO "Upgrading Homebrew."
-    if [[ $LOG_LEVEL == "DEBUG" ]]; then
-      brew upgrade >>"${LOG_FILE}" 2>&1
-    else
-      brew upgrade --quiet
-    fi
-    log INFO "Completed Homebrew upgrade."
-  else
-    log INFO "Installing Homebrew."
-    bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    log INFO "Completed Homebrew install."
-  fi
-}
+# Parse INI file sections to extract package lists
+parse_ini_section() {
+  local section="$1"
+  local file="$PKG_FILE"
 
-setup_updating() {
-  # Manage updates using `launchd`
-  log INFO "Setting up launchd for macOS updates."
-  if [[ -r "${OS_UPDATE_FILE_HOME}" ]]; then
-    sudo cp "${OS_UPDATE_FILE_HOME}" "${OS_UPDATE_FILE_PATH}/"
-    sudo chmod 0644 "${OS_UPDATE_FILE_PATH}/${OS_UPDATE_FILE}"
-    sudo chown root "${OS_UPDATE_FILE_PATH}/${OS_UPDATE_FILE}"
-    sudo launchctl stop "${OS_UPDATE_FILE}"
-    sudo launchctl unload "${OS_UPDATE_FILE_PATH}/${OS_UPDATE_FILE}"
-    sudo launchctl load "${OS_UPDATE_FILE_PATH}"
-    sudo launchctl start "${OS_UPDATE_FILE_PATH}/${OS_UPDATE_FILE}"
-    log INFO "Completed launchctl setup!"
-  else
-    log WARN "File not found! Missing ${OS_UPDATE_FILE_HOME} for launchd."
-  fi
-}
+  check_file_readable "$file" || return 1
 
-install_cli_tools() {
-  # Install XCode command line tools
-  if [[ ! -f "/Library/Developer/CommandLineTools/usr/bin/clang" ]]; then
-    log INFO "Installing XCode command line tools."
-    xcode-select --install
-    if [[ $? -eq 0 ]]; then
-      log INFO "Completed installing XCode command line tools."
-    else
-      log WARN "Error installing XCode command line tools!"
-    fi
-  else
-    log INFO "Skipping XCode command line tools, already installed."
-  fi
-}
-
-ini_parser() {
-  # Parse ini file to retrieve the key under specific section
-  cat ${PKG_FILE} | awk -v section="$1" -v key="$2" '
-    BEGIN {
-      if (length(key) > 0) { params=2 }
-      else if (length(section) > 0) { params=1 }
-      else { params=0 }
-    }
-    /^[ \t]*#/ { next }  # Skip comment lines
-    /^[ \t]*$/ { next }  # Skip empty lines
-    /^\[.*\]$/ {
-      gsub(/^\[|\]$/, "")  # Remove brackets
-      current=$0
-      found=(current==section)
-      if (params==0) { print current }
-      next
-    }
-    {
-      if (found) {
-        if (params==2 && key==$1) { print $3 }
-        else if (params==1 && NF >= 1) { print $1 }
+  awk -v section="$section" '
+      /^[ \t]*#/ { next }
+      /^[ \t]*$/ { next }
+      /^\[.*\]$/ {
+          gsub(/^\[|\]$/, "")
+          current = $0
+          found = (current == section)
+          next
       }
-    }'
+      found && NF >= 1 { print $1 }
+  ' "$file"
 }
 
-install_python_tools() {
-  # Install Python packages
-  if command -v uv &>/dev/null; then
-    if [[ -r "${PKG_FILE}" ]]; then
-      log INFO "Installing Python packages."
-      for pkg in $(ini_parser 'python'); do
-        log DEBUG "Installing Python package: ${pkg}"
-        uv tool install --upgrade --quiet ${pkg}
-      done
-      log INFO "Completed Python packages install"
-    else
-      log WARN "File not found! Missing ${PKG_FILE} file."
-    fi
+# Install or update Homebrew package manager
+setup_homebrew() {
+  if command_exists brew; then
+    log_message "INFO" "Updating Homebrew"
+    run_with_retry "brew update && brew upgrade"
   else
-    log WARN "Required uv missing, skipping Python tools install."
+    log_message "INFO" "Installing Homebrew"
+    run_with_retry '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
   fi
 }
 
-install_homebrew_tools() {
-  # Install Homebrew tools
-  if command -v brew &>/dev/null; then
-    if [[ -r "${PKG_FILE}" ]]; then
-      log INFO "Installing Homebrew tools."
-      for pkg in $(ini_parser 'homebrew'); do
-        log DEBUG "Installing Homebrew tool: ${pkg}"
-        brew install --quiet ${pkg}
-      done
-      log INFO "Complete Homebrew tools install."
-    else
-      log WARN "File not found! Missing ${PKG_FILE} file."
-    fi
+# Install Xcode command line tools if not present
+install_xcode_tools() {
+  if [[ -f "/Library/Developer/CommandLineTools/usr/bin/clang" ]]; then
+    log_message "INFO" "Xcode command line tools already installed"
+    return 0
+  fi
+
+  log_message "INFO" "Installing Xcode command line tools"
+  if xcode-select --install; then
+    log_message "INFO" "Xcode command line tools installed successfully"
   else
-    log WARN "Required brew missing, skipping Homebrew tools install."
+    log_message "ERROR" "Failed to install Xcode command line tools"
+    return 1
   fi
 }
 
+# Install Python packages using uv tool manager
+install_python_packages() {
+  command_exists uv || {
+    log_message "WARN" "uv not available, skipping Python packages"
+    return 0
+  }
+
+  check_file_readable "$PKG_FILE" || return 1
+
+  log_message "INFO" "Installing Python packages"
+  for package in $(parse_ini_section "python"); do
+    log_message "DEBUG" "Installing Python package: $package"
+    run_with_retry "uv tool install --upgrade --quiet $package"
+  done
+}
+
+# Install Homebrew packages (formulae)
+install_homebrew_packages() {
+  local section="$1"
+
+  command_exists brew || {
+    log_message "ERROR" "Homebrew not available"
+    return 1
+  }
+
+  check_file_readable "$PKG_FILE" || return 1
+
+  log_message "INFO" "Installing $section packages"
+  for package in $(parse_ini_section "$section"); do
+    log_message "DEBUG" "Installing $section package: $package"
+    run_with_retry "brew install --quiet $package"
+  done
+}
+
+# Install Homebrew apps (casks)
 install_homebrew_apps() {
-  # Install Homebrew (cask) apps
-  if command -v brew &>/dev/null; then
-    if [[ -r "${PKG_FILE}" ]]; then
-      log INFO "Installing Homebrew apps."
-      for pkg in $(ini_parser 'cask'); do
-        log DEBUG "Installing Homebrew app: ${pkg}"
-        brew install --cask --quiet ${pkg}
-      done
-      log INFO "Complete Homebrew apps install."
-    else
-      log WARN "File not found! Missing ${PKG_FILE} file."
-    fi
+  local section="$1"
+
+  command_exists brew || {
+    log_message "ERROR" "Homebrew not available"
+    return 1
+  }
+
+  check_file_readable "$PKG_FILE" || return 1
+
+  log_message "INFO" "Installing $section packages"
+  for package in $(parse_ini_section "$section"); do
+    log_message "DEBUG" "Installing $section package: $package"
+    run_with_retry "brew install --cask --quiet $package"
+  done
+}
+
+# Install Node.js packages using pnpm
+install_node_packages() {
+  command_exists pnpm || {
+    log_message "WARN" "pnpm not available, skipping Node packages"
+    return 0
+  }
+
+  check_file_readable "$PKG_FILE" || return 1
+
+  log_message "INFO" "Installing Node packages"
+  for package in $(parse_ini_section "node"); do
+    log_message "DEBUG" "Installing Node package: $package"
+    run_with_retry "pnpm install $package"
+    # TODO: Enable on the global bin directory is setup after `pnpm setup`
+    # run_with_retry "pnpm install -g $package"
+  done
+}
+
+# Install Ruby gems using gem
+install_ruby_packages() {
+  command_exists gem || {
+    log_message "WARN" "gem not available, skipping Ruby packages"
+    return 0
+  }
+
+  check_file_readable "$PKG_FILE" || return 1
+
+  log_message "INFO" "Installing Ruby packages"
+  for package in $(parse_ini_section "gem"); do
+    log_message "DEBUG" "Installing Ruby package: $package"
+    run_with_retry "gem install $package"
+  done
+}
+
+# Install development tools using mise
+install_mise_packages() {
+  command_exists mise || {
+    log_message "WARN" "mise not available, skipping mise packages"
+    return 0
+  }
+
+  check_file_readable "$PKG_FILE" || return 1
+
+  log_message "INFO" "Installing mise packages"
+  for package in $(parse_ini_section "mise"); do
+    log_message "DEBUG" "Installing mise package: $package"
+    run_with_retry "mise use --global $package"
+  done
+}
+
+# Update macOS
+update_macos() {
+  log_message "INFO" "Checking for macOS updates"
+
+  # Check if updates are available first
+  if ! softwareupdate -l &>/dev/null; then
+    log_message "INFO" "No macOS updates available"
+    return 0
+  fi
+
+  log_message "INFO" "Installing macOS updates (may require restart)"
+  if sudo softwareupdate --agree-to-license --install --all --restart; then
+    log_message "INFO" "macOS updates installed successfully"
   else
-    log WARN "Required brew missing, skipping Homebrew apps install."
+    log_message "ERROR" "Failed to install macOS updates"
+    return 1
   fi
 }
 
-install_npm_tools() {
-  # Install NPM packages
-  if command -v pnpm &>/dev/null; then
-    if [[ -r "${PKG_FILE}" ]]; then
-      log INFO "Installing NPM packages."
-      for pkg in $(ini_parser 'node'); do
-        log DEBUG "Installing NPM package: ${pkg}"
-        pnpm install ${pkg}
-      done
-      log INFO "Complete Node packages install."
-    else
-      log WARN "File not found! Missing ${PKG_FILE} file."
-    fi
-  else
-    log WARN "Required pnpm missing, skipping Node JavaScript packages install."
-  fi
+# -- Update functions --
+
+# Update all installed package managers and their packages
+update_all_tools() {
+  log_message "INFO" "Starting system updates"
+
+  setup_homebrew || true
+
+  command_exists pnpm && {
+    log_message "INFO" "Updating Node packages"
+    run_with_retry "pnpm update --global" || true
+  }
+
+  command_exists uv && {
+    log_message "INFO" "Updating Python packages"
+    run_with_retry "uv tool upgrade --all --reinstall --quiet" || true
+  }
+
+  command_exists mise && {
+    log_message "INFO" "Updating mise packages"
+    run_with_retry "mise upgrade" || true
+  }
+
+  log_message "INFO" "Updating macOS"
+  update_macos || true
+
+  log_message "INFO" "System updates completed"
 }
 
-install_ruby_tools() {
-  # Install Ruby packages
-  if command -v gem &>/dev/null; then
-    if [[ -r "${PKG_FILE}" ]]; then
-      log INFO "Installing Ruby gemss."
-      for pkg in $(ini_parser 'gem'); do
-        log DEBUG "Installing Ruby gem: ${pkg}"
-        gem install ${pkg}
-      done
-      log INFO "Complete Ruby GEMs install"
-    else
-      log WARN "File not found! Missing ${PKG_FILE} file."
-    fi
-  else
-    log WARN "Required gem missing, skipping Ruby GEMs install."
-  fi
+# Configure launchd for automatic system updates
+setup_auto_updates() {
+  local plist_source="${SCRIPT_HOME}/files/${OS_UPDATE_FILE}"
+  local plist_dest="${OS_UPDATE_PATH}/${OS_UPDATE_FILE}"
+
+  check_file_readable "$plist_source" || {
+    log_message "WARN" "Auto-update plist not found: $plist_source"
+    return 1
+  }
+
+  log_message "INFO" "Setting up automatic updates"
+  [[ ! -d "$OS_UPDATE_PATH" ]] && mkdir -p "$OS_UPDATE_PATH"
+
+  cp "$plist_source" "$plist_dest" && \
+  chmod 644 "$plist_dest" && \
+  launchctl unload "$plist_dest" 2>/dev/null || true && \
+  launchctl load "$plist_dest"
 }
 
-install_mise_tools() {
-  # Install MISE packages
-  if command -v mise &>/dev/null; then
-    if [[ -r "${PKG_FILE}" ]]; then
-      log INFO "Installing Mise tools."
-      for pkg in $(ini_parser 'mise'); do
-        log DEBUG "Installing Mise tool: ${pkg}"
-        mise use --global ${pkg}
-      done
-      log INFO "Complete MISE tools install."
-    else
-      log WARN "File not found! Missing ${PKG_FILE} file."
-    fi
-  else
-    log WARN "Required mise missing, skipping MISE tools install."
-  fi
-}
-
-update_tools() {
-  # Update tools
-  if command -v brew &>/dev/null; then
-    log INFO "Starting Homebrew tools update."
-    brew upgrade --quiet
-  else
-    log ERROR "Homebrew executable (brew) not found, update skipped."
-  fi
-  if command -v pnpm &>/dev/null; then
-    log INFO "Starting NPM tools update..."
-    pnpm update --global
-  else
-    log ERROR "NPM not found, update skipped."
-  fi
-  if command -v uv &>/dev/null; then
-    log INFO "Starting Python tools update."
-    uv tool upgrade --all --reinstall --quiet
-  else
-    log ERROR "uv not found, update skipped."
-  fi
-  if command -v mise &>/dev/null; then
-    log INFO "Starting mise tools update."
-    mise upgrade
-  else
-    log ERROR "mise not found, update skipped."
-  fi
-  log INFO "Starting macOS update..."
-  sudo -n softwareupdate --agree-to-license --install --all --restart
-  log INFO "Completed macOS update!"
-}
-
-main() {
-  log INFO "Checking for SUDO password and updating timestamp until we are finished."
-  export BECOME_ASK_PASS=True
+# Setup persistent sudo access for command executions
+setup_sudo_access() {
+  log_message INFO "Checking for SUDO password and updating timestamp until we are finished."
   sudo -v
   while true; do
     sudo -n true
@@ -324,98 +357,109 @@ main() {
 
   # Ensure we kill the sudo refresh process on exit
   trap 'kill $SUDO_REFRESH_PID 2>/dev/null || true' EXIT
+}
 
-  if [[ ${UPDATE_ONLY} == "yes" ]]; then
-    log INFO "Running updates only."
-    update_tools
-    log INFO "Completed updates!"
-    exit
-  fi
+# -- Main installation functions --
 
-  # Install XCode CLI Tools
-  install_cli_tools
-  # Install/Update Homebrew
-  install_homebrew
-  setup_updating
-  case $INSTALL_ONLY in
-  "brew")
-    # Install Homebrew packages
-    install_homebrew_tools
-    ;;
-  "apps")
-    # Install Homebrew Apps
-    install_homebrew_apps
-    ;;
-  "python")
-    # Install Python packages
-    install_python_tools
-    ;;
-  "node")
-    # Install NPM packages
-    install_npm_tools
-    ;;
-  "gems")
-    # Install Ruby packages
-    install_ruby_tools
-    ;;
-  "mise")
-    # Install mise packages
-    install_mise_tools
-    ;;
-  "all")
-    # Install all package types
-    install_python_tools
-    install_homebrew_tools
-    install_homebrew_apps
-    install_npm_tools
-    install_python_tools
-    install_ruby_tools
-    install_mise_tools
-    ;;
-  "*")
-    log FAIL "Unknown option, exiting."
-    usage && exit 1
-    ;;
+# Route installation to appropriate package manager based on type
+install_package_type() {
+  case "$1" in
+    brew)
+      install_homebrew_packages "homebrew"
+      ;;
+    apps)
+      install_homebrew_apps "cask"
+      ;;
+    python)
+      install_python_packages
+      ;;
+    node)
+      install_node_packages
+      ;;
+    ruby)
+      install_ruby_packages
+      ;;
+    mise)
+      install_mise_packages
+      ;;
+    all)
+      install_homebrew_packages "homebrew"
+      install_homebrew_apps "cask"
+      install_python_packages
+      install_node_packages
+      install_ruby_packages
+      install_mise_packages
+      ;;
+    *)
+      log_message "ERROR" "Unknown package type: $1"
+      return 1
+      ;;
   esac
 }
 
-# Process command line
-for arg in "$@"; do
-  if test -n "$prev_arg"; then
-    eval "$prev_arg=\$arg"
-    prev_arg=
+# -- Main execution --
+
+# Main function - orchestrates the entire installation process
+main() {
+  local update_only=false
+  local install=""
+
+  # Parse command line arguments
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -h|--help)
+        print_usage; exit 0 ;;
+      --version)
+        print_version; exit 0 ;;
+      --log-level)
+        [[ -n "${2:-}" ]] || { log_message "ERROR" "--log-level requires an argument"; exit 1; }
+        LOG_LEVEL="$2"; shift 2 ;;
+      --log-level=*)
+        LOG_LEVEL="${1#*=}"; shift ;;
+      --update-only)
+        update_only=true; shift ;;
+      --install)
+        [[ -n "${2:-}" ]] || { log_message "ERROR" "--install requires an argument"; exit 1; }
+        install="$2"; shift 2 ;;
+      --install=*)
+        install="${1#*=}"; shift ;;
+      -*)
+        log_message "ERROR" "Unknown option: $1"; print_usage >&2; exit 1 ;;
+      *)
+        log_message "ERROR" "Unexpected argument: $1"; print_usage >&2; exit 1 ;;
+    esac
+  done
+
+  # Initialize logging system
+  setup_logging
+  log_message "INFO" "Starting $SCRIPT_NAME v$SCRIPT_VERSION"
+
+  setup_sudo_access
+
+  # Handle update-only mode - skip installation, just update existing packages
+  if [[ "$update_only" == true ]]; then
+    log_message "INFO" "Running in update-only mode"
+    update_all_tools
+    log_message "INFO" "Update completed successfully"
+    exit 0
   fi
 
-  case "$arg" in
-  -*=*) optarg=$(echo "$arg" | sed 's/[-_a-zA-Z0-9]*=//') ;;
-  *) optarg= ;;
-  esac
+  # Main installation workflow
+  install_xcode_tools || { log_message "ERROR" "Failed to install Xcode tools"; exit 1; }
+  setup_homebrew || { log_message "ERROR" "Failed to setup Homebrew"; exit 1; }
+  setup_auto_updates
 
-  case $arg in
-  -h | --help)
-    usage && exit 0
-    ;;
-  --version)
-    print_version && exit 0
-    ;;
-  --log-level=*)
-    export LOG_LEVEL="$optarg"
-    ;;
-  --update-only)
-    export UPDATE_ONLY="yes"
-    ;;
-  --install-only=*)
-    export INSTALL_ONLY="$optarg"
-    ;;
-  -*)
-    log FAIL "Unknown option ${arg}, exiting."
-    exit 1
-    ;;
-  *)
-    log FAIL "Unknown option or missing argument for ${arg}, exiting."
-    usage && exit 1
-    ;;
-  esac
-done
+  # Install packages based on user selection or install all
+  if [[ -n "$install" ]]; then
+    log_message "INFO" "Installing package type: $install"
+    install_package_type "$install"
+  else
+    log_message "INFO" "Installing all package types"
+    install_package_type "all"
+  fi
 
-main
+  log_message "INFO" "Installation completed successfully"
+}
+
+# Execute main function with all command line arguments
+main "$@"

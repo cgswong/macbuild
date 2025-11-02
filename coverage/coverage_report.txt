@@ -1,0 +1,42 @@
+MacBuild Test Coverage Report
+=============================
+Generated: Sat Nov  1 23:08:23 EDT 2025
+
+Test Results:
+- Tests Run: 19
+- Tests Passed: 19
+- Tests Failed: 0
+- Success Rate: 100%
+
+Function Coverage:
+- Total Functions: 21
+- Functions Tested: 11
+- Coverage: 52%
+
+Key Areas Tested:
+✓ INI Section Parsing
+✓ Package Installation Logic
+✓ Update Functionality
+✓ Error Handling
+✓ Script Interface (help/version)
+✓ File Operations
+
+Functions Verified:
+  ✓ parse_ini_section
+  ✓ install_homebrew_packages
+  ✓ install_python_packages
+  ✓ install_node_packages
+  ✓ install_ruby_packages
+  ✓ install_mise_packages
+  ✓ update_all_tools
+  ✓ log_message
+  ✓ check_file_readable
+  ✓ print_usage
+  ✓ print_version
+
+Test Categories:
+  ✓ INI Parsing: Verified awk-based section extraction
+  ✓ Package Management: Verified function presence and structure
+  ✓ Updates: Verified update function exists and is callable
+  ✓ Error Handling: Verified error checking and logging
+  ✓ User Interface: Verified help and version options work
