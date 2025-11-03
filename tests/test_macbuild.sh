@@ -6,9 +6,9 @@ set -euo pipefail
 
 # Test configuration
 readonly TEST_DIR="$(cd "$(dirname "$0")" && pwd)"
-readonly SCRIPT_PATH="${TEST_DIR}/macbuild"
-readonly COVERAGE_DIR="${TEST_DIR}/coverage"
-readonly TEST_LOG="${TEST_DIR}/test_results.log"
+readonly SCRIPT_PATH="${TEST_DIR}/../macbuild"
+readonly COVERAGE_DIR="${TEST_DIR}/../coverage"
+readonly TEST_LOG="${TEST_DIR}/../test_results.log"
 
 # Test counters
 TESTS_RUN=0
@@ -22,10 +22,10 @@ declare -A FUNCTION_COVERAGE=()
 # Initialize test environment
 setup_test_env() {
     mkdir -p "$COVERAGE_DIR"
-    mkdir -p "${TEST_DIR}/test_files"
+    mkdir -p "${TEST_DIR}/data"
 
     # Create test packages.ini
-    cat > "${TEST_DIR}/test_files/packages.ini" << 'EOF'
+    cat > "${TEST_DIR}/data/packages.ini" << 'EOF'
 [homebrew]
 git
 curl
@@ -52,7 +52,7 @@ python@3.11
 EOF
 
     # Create test plist
-    cat > "${TEST_DIR}/test_files/com.user.macbuild_update.plist" << 'EOF'
+    cat > "${TEST_DIR}/data/com.user.macbuild_update.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -165,7 +165,7 @@ EOF
     done
 
     # Source the functions with test environment
-    export PKG_FILE="${TEST_DIR}/test_files/packages.ini"
+    export PKG_FILE="${TEST_DIR}/data/packages.ini"
     export LOG_DIR="${COVERAGE_DIR}/logs"
     export LOG_LEVEL="DEBUG"
 
@@ -178,17 +178,17 @@ test_ini_parsing() {
 
     # Test parse_ini_section function
     local result
-    result=$(parse_ini_section "homebrew" "${TEST_DIR}/test_files/packages.ini" 2>/dev/null || echo "")
+    result=$(parse_ini_section "homebrew" "${TEST_DIR}/data/packages.ini" 2>/dev/null || echo "")
 
     assert_contains "$result" "git" "INI parsing extracts git package"
     assert_contains "$result" "curl" "INI parsing extracts curl package"
     assert_contains "$result" "wget" "INI parsing extracts wget package"
 
     # Test different sections
-    result=$(parse_ini_section "python" "${TEST_DIR}/test_files/packages.ini" 2>/dev/null || echo "")
+    result=$(parse_ini_section "python" "${TEST_DIR}/data/packages.ini" 2>/dev/null || echo "")
     assert_contains "$result" "black" "INI parsing extracts Python packages"
 
-    result=$(parse_ini_section "nonexistent" "${TEST_DIR}/test_files/packages.ini" 2>/dev/null || echo "")
+    result=$(parse_ini_section "nonexistent" "${TEST_DIR}/data/packages.ini" 2>/dev/null || echo "")
     assert_equals "" "$result" "INI parsing returns empty for nonexistent section"
 
     FUNCTION_COVERAGE[parse_ini_section]=1
@@ -230,7 +230,7 @@ test_utilities() {
     TESTS_RUN=$((TESTS_RUN + 1))
 
     # Test check_file_readable
-    if check_file_readable "${TEST_DIR}/test_files/packages.ini" 2>/dev/null; then
+    if check_file_readable "${TEST_DIR}/data/packages.ini" 2>/dev/null; then
         log_test "✓ PASS: check_file_readable detects readable file"
         TESTS_PASSED=$((TESTS_PASSED + 1))
     else

@@ -9,12 +9,12 @@ echo "Running macbuild test suite..."
 echo "=============================="
 
 # Run the test suite
-if "${SCRIPT_DIR}/test_macbuild_simple.sh"; then
+if "${SCRIPT_DIR}/tests/test_macbuild_simple.sh"; then
     echo
     echo "Coverage Report:"
     echo "==============="
     cat "${SCRIPT_DIR}/coverage/coverage_report.txt"
-    
+
     echo
     echo "✅ Test suite completed successfully!"
     echo "📊 Coverage data: ${SCRIPT_DIR}/coverage/"

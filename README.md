@@ -1,5 +1,7 @@
 # MacBuild
 
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+
 **MacBuild** is a comprehensive macOS system configuration and package management tool that automates the installation and management of development tools, applications, and packages across multiple package managers.
 
 ## Features
@@ -224,17 +226,14 @@ Function Coverage: 65% (11/17 functions)
 ```text
 macbuild/
 ├── macbuild                    # Main executable script
-├── macbuild_optimized         # Optimized version
-├── files/
-│   ├── packages.ini           # Package configuration
-│   └── com.user.macbuild_update.plist  # Auto-update config
-├── test_macbuild.sh          # Comprehensive test suite
-├── test_macbuild_simple.sh   # Simplified test suite
+├── macbuild_optimized          # Optimized version
+├── tests/
+│   ├── test_macbuild.sh          # Comprehensive test suite
+│   ├── test_macbuild_simple.sh   # Simplified test suite
+│   └── data/                     # Test fixtures
 ├── run_tests.sh              # Test runner
 ├── Makefile                  # Build and test automation
-├── coverage/                 # Test coverage reports
-└── test_files/              # Test fixtures
-
+└── coverage/                 # Test coverage reports
 ```
 
 ### Available Make Targets

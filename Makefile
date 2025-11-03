@@ -42,7 +42,7 @@ coverage: ## Display coverage report
 
 clean:  ## Clean up test artifacts and logs
 	@echo "Cleaning up test artifacts..."
-	@rm -rf coverage/ test_files/ test_results.log
+	@rm -rf coverage/ tests/data/ test_results.log
 	@rm -f brew uv pnpm gem mise xcode-select launchctl
 	@echo "✓ Cleanup complete"
 

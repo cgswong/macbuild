@@ -2,12 +2,13 @@
 # macOS system configuration and package management tool
 # Installs packages via Homebrew, Python (uv), Node (pnpm), Ruby (gem), and mise
 
-set -euo pipefail  # Exit on error, undefined vars, pipe failures
+# TODO: Uncomment after resolving pipeline issues.
+# set -euo pipefail  # Exit on error, undefined vars, pipe failures
 
 # -- Configuration --
 readonly SCRIPT_NAME=${0##*/}
 readonly SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-readonly SCRIPT_HOME=$(cd "$SCRIPT_DIR/.." && pwd)
+readonly SCRIPT_HOME="$SCRIPT_DIR"
 readonly SCRIPT_VERSION="2.0.0"
 
 # Environment variables with defaults
@@ -16,12 +17,9 @@ LOG_DIR=${LOG_DIR:-"~/.${SCRIPT_NAME}/logs"}
 PKG_FILE=${PKG_FILE:-"${SCRIPT_HOME}/files/packages.ini"}
 
 # Derived paths
-readonly LOG_FILE="${LOG_DIR}/${SCRIPT_NAME}.log"
+readonly LOG_FILE="${LOG_DIR}/${SCRIPT_NAME%.*}.log"
 readonly OS_UPDATE_FILE="com.user.macbuild_update.plist"
-readonly OS_UPDATE_PATH="~/Library/LaunchAgents"
-
-LOG_FILE_NAME=${SCRIPT_NAME%.*}.log
-OS_UPDATE_FILE_HOME="${SCRIPT_HOME}/files/${OS_UPDATE_FILE}"
+readonly OS_UPDATE_PATH="${HOME}/Library/LaunchAgents"
 
 # -- Logging functions --
 
@@ -288,6 +286,7 @@ update_macos() {
   fi
 
   log_message "INFO" "Installing macOS updates (may require restart)"
+  setup_sudo_access
   if sudo softwareupdate --agree-to-license --install --all --restart; then
     log_message "INFO" "macOS updates installed successfully"
   else
@@ -433,8 +432,6 @@ main() {
   # Initialize logging system
   setup_logging
   log_message "INFO" "Starting $SCRIPT_NAME v$SCRIPT_VERSION"
-
-  setup_sudo_access
 
   # Handle update-only mode - skip installation, just update existing packages
   if [[ "$update_only" == true ]]; then

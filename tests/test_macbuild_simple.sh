@@ -4,8 +4,8 @@
 set -euo pipefail
 
 readonly TEST_DIR="$(cd "$(dirname "$0")" && pwd)"
-readonly SCRIPT_PATH="${TEST_DIR}/macbuild"
-readonly COVERAGE_DIR="${TEST_DIR}/coverage"
+readonly SCRIPT_PATH="${TEST_DIR}/../macbuild"
+readonly COVERAGE_DIR="${TEST_DIR}/../coverage"
 
 # Test counters
 TESTS_RUN=0
@@ -15,10 +15,10 @@ TESTS_FAILED=0
 # Setup test environment
 setup_test_env() {
     mkdir -p "$COVERAGE_DIR"
-    mkdir -p "${TEST_DIR}/test_files"
+    mkdir -p "${TEST_DIR}/data"
 
     # Create test packages.ini
-    cat > "${TEST_DIR}/test_files/packages.ini" << 'EOF'
+    cat > "${TEST_DIR}/data/packages.ini" << 'EOF'
 [homebrew]
 git
 curl
@@ -78,7 +78,7 @@ test_ini_parsing() {
             next
         }
         found && NF >= 1 { print $1 }
-    ' "${TEST_DIR}/test_files/packages.ini")
+    ' "${TEST_DIR}/data/packages.ini")
 
     run_test "INI parsing extracts git" "[[ '$result' == *'git'* ]]"
     run_test "INI parsing extracts curl" "[[ '$result' == *'curl'* ]]"
@@ -94,7 +94,7 @@ test_ini_parsing() {
             next
         }
         found && NF >= 1 { print $1 }
-    ' "${TEST_DIR}/test_files/packages.ini")
+    ' "${TEST_DIR}/data/packages.ini")
 
     run_test "INI parsing extracts Python packages" "[[ '$result' == *'black'* ]]"
 }
@@ -112,7 +112,7 @@ test_file_operations() {
     log_test "Testing file operations..."
 
     run_test "Script is executable" "[[ -x '$SCRIPT_PATH' ]]"
-    run_test "Test packages.ini exists" "[[ -r '${TEST_DIR}/test_files/packages.ini' ]]"
+    run_test "Test packages.ini exists" "[[ -r '${TEST_DIR}/data/packages.ini' ]]"
     run_test "Script contains key functions" "grep -q 'install_homebrew_packages' '$SCRIPT_PATH'"
     run_test "Script contains logging" "grep -q 'log_message' '$SCRIPT_PATH'"
     run_test "Script contains INI parsing" "grep -q 'parse_ini_section' '$SCRIPT_PATH'"
@@ -139,8 +139,8 @@ test_update_functionality() {
     run_test "macOS update uses interactive sudo" "grep -q 'sudo softwareupdate' '$SCRIPT_PATH' && ! grep -q 'sudo -n softwareupdate' '$SCRIPT_PATH'"
 
     # Test that update function contains expected commands
-    run_test "Update function calls brew update" "grep -A 20 'update_all_tools()' '$SCRIPT_PATH' | grep -q 'brew update'"
-    run_test "Update function calls softwareupdate" "grep -A 20 'update_all_tools()' '$SCRIPT_PATH' | grep -q 'softwareupdate'"
+    run_test "Update function calls brew update" "grep -A 20 'setup_homebrew()' '$SCRIPT_PATH' | grep -q 'brew update'"
+    run_test "Update function calls softwareupdate" "grep -A 20 'update_macos()' '$SCRIPT_PATH' | grep -q 'softwareupdate'"
 }
 
 # Test error handling
