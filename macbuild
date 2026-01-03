@@ -9,16 +9,17 @@
 readonly SCRIPT_NAME=${0##*/}
 readonly SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 readonly SCRIPT_HOME="$SCRIPT_DIR"
-readonly SCRIPT_VERSION="2.0.0"
+readonly SCRIPT_VERSION=$(cat ${SCRIPT_DIR}/VERSION)
+readonly OS_UPDATE_FILE="com.user.macbuild_update.plist"
 
 # Environment variables with defaults
 LOG_LEVEL=${LOG_LEVEL:-"INFO"}
-LOG_DIR=${LOG_DIR:-"~/.${SCRIPT_NAME}/logs"}
+LOG_DIR=${LOG_DIR:-"${HOME}/${SCRIPT_NAME}/logs"}
 PKG_FILE=${PKG_FILE:-"${SCRIPT_HOME}/files/packages.ini"}
 
 # Derived paths
 readonly LOG_FILE="${LOG_DIR}/${SCRIPT_NAME%.*}.log"
-readonly OS_UPDATE_FILE="com.user.macbuild_update.plist"
+readonly PLIST_SOURCE="${SCRIPT_HOME}/files/${OS_UPDATE_FILE}"
 readonly OS_UPDATE_PATH="${HOME}/Library/LaunchAgents"
 
 # -- Logging functions --
@@ -72,7 +73,7 @@ check_file_readable() {
 # Execute command with retry logic for network operations
 run_with_retry() {
   local cmd="$1"
-  local max_attempts="${2:-3}"
+  local max_attempts="${2:-2}"
 
   for ((attempt=1; attempt<=max_attempts; attempt++)); do
     log_message "DEBUG" "Attempt $attempt: $cmd"
@@ -113,8 +114,8 @@ Options:
 
 Environment Variables:
   LOG_LEVEL              Logging level (default: INFO)
-  LOG_DIR                Log directory (default: ~/.macbuild/logs)
-  PKG_FILE               Package configuration file
+  LOG_DIR                Log directory (set: ${LOG_DIR})
+  PKG_FILE               Package configuration file (set: ${PKG_FILE})
 
 Examples:
   macbuild                        # Full installation
@@ -150,7 +151,7 @@ parse_ini_section() {
 setup_homebrew() {
   if command_exists brew; then
     log_message "INFO" "Updating Homebrew"
-    run_with_retry "brew update && brew upgrade"
+    run_with_retry "brew update --quiet && brew upgrade --quiet"
   else
     log_message "INFO" "Installing Homebrew"
     run_with_retry '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
@@ -185,7 +186,7 @@ install_python_packages() {
   log_message "INFO" "Installing Python packages"
   for package in $(parse_ini_section "python"); do
     log_message "DEBUG" "Installing Python package: $package"
-    run_with_retry "uv tool install --upgrade --quiet $package"
+    run_with_retry "uv tool install --upgrade $package"
   done
 }
 
@@ -326,18 +327,17 @@ update_all_tools() {
 
 # Configure launchd for automatic system updates
 setup_auto_updates() {
-  local plist_source="${SCRIPT_HOME}/files/${OS_UPDATE_FILE}"
   local plist_dest="${OS_UPDATE_PATH}/${OS_UPDATE_FILE}"
 
-  check_file_readable "$plist_source" || {
-    log_message "WARN" "Auto-update plist not found: $plist_source"
+  check_file_readable "$PLIST_SOURCE" || {
+    log_message "WARN" "Auto-update plist not found: $PLIST_SOURCE"
     return 1
   }
 
   log_message "INFO" "Setting up automatic updates"
   [[ ! -d "$OS_UPDATE_PATH" ]] && mkdir -p "$OS_UPDATE_PATH"
 
-  cp "$plist_source" "$plist_dest" && \
+  cp "$PLIST_SOURCE" "$plist_dest" && \
   chmod 644 "$plist_dest" && \
   launchctl unload "$plist_dest" 2>/dev/null || true && \
   launchctl load "$plist_dest"
@@ -384,10 +384,10 @@ install_package_type() {
     all)
       install_homebrew_packages "homebrew"
       install_homebrew_apps "cask"
+      install_mise_packages
       install_python_packages
       install_node_packages
       install_ruby_packages
-      install_mise_packages
       ;;
     *)
       log_message "ERROR" "Unknown package type: $1"
