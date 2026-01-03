@@ -7,3 +7,7 @@
 # Ansible droppings
 *.retry
 
+# IDEs
+.idea/
+.vscode/
+.kiro/
